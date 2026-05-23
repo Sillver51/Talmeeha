@@ -46,6 +46,13 @@ export default function WinModal({ gs }: WinModalProps) {
   const winner: Team = gs.winner ?? "red";
   const tn = gs.teamNames;
 
+  // Derive the ending cause from the board: if the assassin card was revealed,
+  // the game ended on an assassin loss; otherwise a team cleared its cards.
+  const assassinRevealed = gs.board.some((c) => c.t === "assassin" && c.rv);
+  const subtitle = assassinRevealed
+    ? "☠️ كُشف القاتل!"
+    : "كشفوا جميع كلماتهم 🎉";
+
   return (
     <div className="modal-wrap" id="win-modal">
       <div className="modal">
@@ -59,7 +66,7 @@ export default function WinModal({ gs }: WinModalProps) {
           فاز {winner === "red" ? tn.red : tn.blue}! 🍇
         </div>
         <div className="modal-sub" id="win-sub">
-          كشفوا جميع كلماتهم 🎉
+          {subtitle}
         </div>
         <div className="win-scoreboard" id="win-scoreboard">
           <ScoreboardCard
@@ -75,7 +82,18 @@ export default function WinModal({ gs }: WinModalProps) {
             isWinner={winner === "blue"}
           />
         </div>
-        <span className="wsb-reset" onClick={resetWins}>
+        <span
+          className="wsb-reset"
+          role="button"
+          tabIndex={0}
+          onClick={resetWins}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              resetWins();
+            }
+          }}
+        >
           تصفير السكور ↺
         </span>
         <button

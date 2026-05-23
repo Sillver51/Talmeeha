@@ -172,7 +172,19 @@ export default function LobbyScreen() {
           </div>
           <span className="muted">انقر للنسخ</span>
         </div>
-        <div className="room-code-display" id="lob-code" onClick={copyCode}>
+        <div
+          className="room-code-display"
+          id="lob-code"
+          role="button"
+          tabIndex={0}
+          onClick={copyCode}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              copyCode();
+            }
+          }}
+        >
           {code}
         </div>
         <div className="muted tc" style={{ marginBottom: "1rem" }}>
