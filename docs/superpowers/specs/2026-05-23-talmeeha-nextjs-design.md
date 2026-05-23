@@ -210,3 +210,32 @@ Server stays **authoritative**; clients are pure projections of server state (as
 | In-memory rooms lost on redeploy | Accepted (matches today); Redis noted as future RFC |
 | Host-mode synthetic players complexity | Keep `hRed/hBlue` shape in types; cover with dedicated tests |
 | RTL/gradient regressions | Preserve exact CSS tokens/classes; visual check vs. `preview.html` |
+
+---
+
+## 10. Migration notes (Plan 1 — as built)
+
+Intentional, reviewed differences from the legacy `server.js` after the foundation + engine
+build (branch `feat/nextjs-16-foundation`). All gameplay outcomes match legacy; these are
+hardening/quality changes:
+
+1. **Zod rejection vs silent ignore** — malformed inbound payloads now emit an `error` event;
+   legacy silently `return`ed. Intentional boundary hardening.
+2. **Fisher–Yates shuffle** (`src/lib/game/rng.ts`) replaces legacy `sort(() => Math.random()-0.5)`
+   — unbiased, and seedable via `mulberry32` for deterministic tests.
+3. **Counts re-derived from the board** each guess (`withCounts`) instead of legacy per-step
+   `sRed--/sBlue--` deltas; the board is the single source of truth, so this self-heals drift.
+4. **Game log capped at 50** newest entries (`addLog`); legacy grew it unbounded.
+5. **Production runs via `tsx server/index.ts`** (no compiled `dist/`). Reason: `tsc` does not
+   rewrite the `@/*` path aliases, so a compiled server can't resolve `@/lib/*` at runtime.
+   `next build` only builds the app bundle. `tsconfig.server.json` was removed.
+6. **Legacy dead line dropped** — `server.js:238` (`htd(...)` with no assignment in the
+   host-mode hit branch) was a no-op and intentionally omitted.
+7. **CORS tightened** — `origin: false` in production vs legacy always-`'*'`.
+8. **ESM custom server** — top-level `await app.prepare()` replaces callback-style bootstrapping;
+   Socket.io is bound with typed event maps (`Server<ClientToServerEvents, ServerToClientEvents>`).
+
+**Known LOW follow-ups (defer to Plan 2/3):**
+- Add a dedicated unit/integration test for host-mode guesser rotation (`gIdx` flip-back in
+  `server/handlers/play.ts`); currently exercised only indirectly.
+- Prune now-unused `dist` references in `tsconfig.json` exclude / `.gitignore` (harmless).
