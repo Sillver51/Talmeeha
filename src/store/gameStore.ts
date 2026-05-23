@@ -8,6 +8,13 @@ import type {
 } from "@/lib/types";
 
 type Mode = "host" | "online";
+/**
+ * Pre-connection client screen for host mode (mirrors legacy `show()`):
+ * `"home"` before setup, `"setup"` after `startHostSetup()`. Once a `gs` exists
+ * the rendered screen is derived from `gs.phase`, so this only disambiguates the
+ * host-mode home/setup transition that has no server state behind it.
+ */
+type ClientScreen = "home" | "setup";
 
 interface HostTeamSetup {
   players: string[];
@@ -39,6 +46,7 @@ interface GameStore {
   gs: GameState | null;
   // local UI
   mode: Mode;
+  clientScreen: ClientScreen;
   doubtMode: boolean;
   hostViewLeader: boolean;
   toastMsg: string | null;
@@ -133,6 +141,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isHost: false,
   gs: null,
   mode: "host",
+  clientScreen: "home",
   doubtMode: false,
   hostViewLeader: false,
   toastMsg: null,
@@ -181,7 +190,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
     saveName(n);
-    set({ myName: n, hSetup: emptyHostSetup() });
+    set({ myName: n, hSetup: emptyHostSetup(), clientScreen: "setup" });
   },
 
   addPlayer(t, name) {
@@ -359,6 +368,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       gs: null,
       isHost: false,
       doubtMode: false,
+      clientScreen: "home",
     });
   },
 

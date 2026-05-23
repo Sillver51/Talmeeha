@@ -1,0 +1,214 @@
+"use client";
+
+import type { GameState, Team } from "@/lib/types";
+import { useGameStore } from "@/store/gameStore";
+
+/**
+ * Lobby screen (online mode) — ports legacy `#s-lobby` (~721–755) +
+ * `renderLobby` (~1039–1059). Room-code display (click to copy), red/blue team
+ * cards listing players with leader badge, join-team + become-leader buttons,
+ * spectators row, and a start button enabled per `canStart`.
+ * Arabic copy preserved verbatim.
+ */
+
+/** Ported from legacy `canStart` (~941–944). */
+function canStart(gs: GameState): boolean {
+  return (
+    gs.teams.red.length >= 2 &&
+    Boolean(gs.leaders.red) &&
+    gs.teams.blue.length >= 2 &&
+    Boolean(gs.leaders.blue)
+  );
+}
+
+const TEAM_STYLE: Record<Team, { bg: string; border: string; color: string }> = {
+  red: {
+    bg: "rgba(240,64,96,.08)",
+    border: "2px solid rgba(240,64,96,.3)",
+    color: "var(--red2)",
+  },
+  blue: {
+    bg: "rgba(45,110,255,.08)",
+    border: "2px solid rgba(45,110,255,.3)",
+    color: "var(--blue2)",
+  },
+};
+
+interface TeamCardProps {
+  team: Team;
+  gs: GameState;
+}
+
+function TeamCard({ team, gs }: TeamCardProps) {
+  const joinTeam = useGameStore((s) => s.joinTeam);
+  const becomeLeader = useGameStore((s) => s.becomeLeader);
+  const ids = gs.teams[team];
+  const style = TEAM_STYLE[team];
+  const isRed = team === "red";
+
+  return (
+    <div
+      style={{
+        background: style.bg,
+        border: style.border,
+        borderRadius: "var(--r)",
+        padding: ".8rem .65rem",
+        textAlign: "center",
+        cursor: "pointer",
+      }}
+      onClick={() => joinTeam(team)}
+    >
+      <div style={{ fontSize: "1.4rem", marginBottom: ".2rem" }}>
+        {isRed ? "🔴" : "🔵"}
+      </div>
+      <div
+        style={{ fontWeight: 800, color: style.color, fontSize: ".88rem" }}
+        id={`lob-${team}-name`}
+      >
+        {gs.teamNames[team]}
+      </div>
+      <div
+        className="muted"
+        id={`cnt-${team}`}
+        style={{ fontSize: ".7rem", margin: ".18rem 0 .32rem" }}
+      >
+        {ids.length} لاعبين
+      </div>
+      <ul style={{ listStyle: "none" }} id={`lst-${team}`}>
+        {ids.map((id) => {
+          const player = gs.players[id];
+          const isLeader = gs.leaders[team] === id;
+          return (
+            <li
+              key={id}
+              style={{
+                fontSize: ".71rem",
+                color: "var(--text2)",
+                padding: ".11rem 0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: ".24rem",
+              }}
+            >
+              {player?.name ?? "?"}
+              {isLeader && (
+                <span
+                  style={{
+                    background: "var(--gold)",
+                    color: "#120A00",
+                    fontSize: ".56rem",
+                    fontWeight: 900,
+                    padding: ".07rem .28rem",
+                    borderRadius: "4px",
+                  }}
+                >
+                  قائد
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <button
+        className={isRed ? "btn btn-sm btn-red mt" : "btn btn-sm btn-blue mt"}
+        onClick={(e) => {
+          e.stopPropagation();
+          becomeLeader(team);
+        }}
+      >
+        ⭐ قائداً
+      </button>
+    </div>
+  );
+}
+
+export default function LobbyScreen() {
+  const gs = useGameStore((s) => s.gs);
+  const roomCode = useGameStore((s) => s.roomCode);
+  const startGame = useGameStore((s) => s.startGame);
+  const toast = useGameStore((s) => s.toast);
+
+  if (!gs) return null;
+
+  const code = gs.code || "----";
+  const ok = canStart(gs);
+
+  const specIds = Object.keys(gs.players).filter(
+    (id) => !gs.teams.red.includes(id) && !gs.teams.blue.includes(id),
+  );
+  const specNames = specIds
+    .map((id) => gs.players[id]?.name)
+    .filter((n): n is string => Boolean(n));
+
+  const copyCode = () => {
+    const value = roomCode ?? gs.code;
+    if (!value) return;
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast(`تم نسخ الرمز 🍇 ${value}`))
+      .catch(() => toast("تعذّر النسخ"));
+  };
+
+  return (
+    <div className="screen on" id="s-lobby">
+      <div style={{ textAlign: "center", marginBottom: "1.2rem" }}>
+        <div style={{ fontSize: "1.6rem", marginBottom: ".2rem" }}>🍇</div>
+        <div className="logo" style={{ fontSize: "2.2rem" }}>
+          تلميحة
+        </div>
+      </div>
+      <div className="card" style={{ maxWidth: "520px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: ".6rem",
+          }}
+        >
+          <div className="card-title" style={{ marginBottom: 0 }}>
+            رمز الغرفة
+          </div>
+          <span className="muted">انقر للنسخ</span>
+        </div>
+        <div className="room-code-display" id="lob-code" onClick={copyCode}>
+          {code}
+        </div>
+        <div className="muted tc" style={{ marginBottom: "1rem" }}>
+          شارك الرمز مع أصحابك
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: ".7rem",
+            marginBottom: ".7rem",
+          }}
+        >
+          <TeamCard team="red" gs={gs} />
+          <TeamCard team="blue" gs={gs} />
+        </div>
+        <div className="muted tc" id="spec-row" style={{ marginBottom: ".7rem" }}>
+          {specNames.length ? `👁 ${specNames.join("، ")}` : ""}
+        </div>
+        <div className="divider"></div>
+        <button
+          className="btn btn-gold"
+          id="btn-start"
+          disabled={!ok}
+          onClick={startGame}
+        >
+          🚀 ابدأ اللعبة
+        </button>
+        <div
+          className="muted tc"
+          id="start-hint"
+          style={{ display: ok ? "none" : "block" }}
+        >
+          يحتاج كل فريق لاعبَين + قائد واحد
+        </div>
+      </div>
+    </div>
+  );
+}
