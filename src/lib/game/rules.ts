@@ -4,6 +4,7 @@ import { checkWin, remaining } from "./win";
 
 export type GuessOutcome = "hit" | "miss" | "assassin" | "win" | "noop";
 
+// Re-derive team counts from the board each guess (legacy used per-step deltas); board is the single source of truth, so this also self-heals any drift.
 function withCounts(state: GameState): GameState {
   return { ...state, sRed: remaining(state.board, "red"), sBlue: remaining(state.board, "blue") };
 }

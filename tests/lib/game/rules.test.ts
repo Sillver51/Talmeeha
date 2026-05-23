@@ -54,6 +54,14 @@ describe("resolveGuess", () => {
     expect(n.winner).toBe("blue");
     expect(n.wins.blue).toBe(1);
   });
+  it("assassin takes precedence over a simultaneous team win", () => {
+    // red has already cleared its only red card; guessing the assassin must still lose
+    const s = state([c("قاتل", "assassin"), c("بحر", "red", true), c("قمر", "blue")]);
+    const { state: n, outcome } = resolveGuess(s, 0, "لاعب");
+    expect(outcome).toBe("assassin");
+    expect(n.winner).toBe("blue"); // other team wins despite red having 0 remaining
+    expect(n.phase).toBe("ended");
+  });
   it("revealing a team's last card wins the game", () => {
     const s = state([c("بحر", "red"), c("قمر", "blue")], { gleft: 2, sRed: 1 });
     const { state: n, outcome } = resolveGuess(s, 0, "لاعب");
