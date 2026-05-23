@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تلميحة — Design Tokens Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;--bg2:#0F0F1A;--bg3:#14141F;--surface:#1A1A2E;--surface2:#1F1F38;--surface3:#252545;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.11);
+  --red:#F04060;--red2:#FF7090;--blue:#2D6EFF;--blue2:#6699FF;
+  --gold:#E8A020;--gold2:#FFD060;--grape:#8B5CF6;--grape2:#A78BFA;
+  --doubt:#A855F7;--doubt2:#C084FC;--sand:#F0E4C8;
+  --text:#EEEEFF;--text2:#9999BB;--muted:#555577;
+  --r:14px;--r-sm:9px;--r-lg:22px;--shadow:0 8px 32px rgba(0,0,0,.5);
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);direction:rtl;padding:2rem;line-height:1.5;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 20% 20%,rgba(139,92,246,.06),transparent 55%),
+             radial-gradient(ellipse at 80% 80%,rgba(45,110,255,.05),transparent 55%);}
+.wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;}
+h1{font-size:3rem;font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(135deg,var(--grape2),var(--gold2),var(--red2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.tag{color:var(--muted);letter-spacing:5px;text-transform:uppercase;font-size:.75rem;margin-bottom:2.5rem;}
+h2{font-size:1.1rem;font-weight:800;color:var(--gold2);margin:2.5rem 0 1rem;border-bottom:1px solid var(--border2);padding-bottom:.4rem;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;}
+.swatch{border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border);background:var(--surface);}
+.chip{height:64px;}
+.swatch .meta{padding:.5rem .6rem;font-size:.72rem;}
+.swatch .name{font-weight:800;}
+.swatch .hex{color:var(--text2);font-family:monospace;font-size:.68rem;}
+.type-row{display:flex;align-items:baseline;gap:1rem;padding:.5rem 0;border-bottom:1px solid var(--border);}
+.type-row .lbl{color:var(--muted);font-size:.7rem;width:120px;flex-shrink:0;}
+.btns{display:flex;flex-wrap:wrap;gap:.6rem;}
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.78rem 1.4rem;border-radius:var(--r-sm);
+  font-family:'Tajawal';font-size:.93rem;font-weight:800;cursor:pointer;border:none;}
+.btn-gold{background:linear-gradient(135deg,var(--grape2),var(--gold2),var(--grape2));color:#120A00;}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-red{background:var(--red);color:#fff;}.btn-blue{background:var(--blue);color:#fff;}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.btn-doubt{background:rgba(168,85,247,.16);color:var(--doubt2);border:1px solid rgba(168,85,247,.3);}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-width:560px;
+  background:rgba(8,6,18,.6);border:1px solid var(--border);border-radius:var(--r);padding:8px;}
+.wc{border-radius:12px;padding:.55rem .25rem;text-align:center;font-weight:900;font-size:.82rem;min-height:54px;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.45);}
+.wc.unrev{background:linear-gradient(145deg,#F5E8C4,#EDD99A);color:#1A0E04;}
+.wc.red{background:linear-gradient(135deg,#D01830,#F04060);color:#FFE8EC;}
+.wc.blue{background:linear-gradient(135deg,#0C30B0,#2D6EFF);color:#D8E8FF;}
+.wc.neutral{background:linear-gradient(135deg,#3A2E1A,#4A3C22);color:#B89A5A;}
+.wc.assassin{background:linear-gradient(135deg,#0D0505,#1A0808);color:#AA2020;}
+.glass{background:rgba(26,26,46,.85);backdrop-filter:blur(16px);border:1px solid var(--border2);
+  border-radius:var(--r-lg);padding:1.5rem;box-shadow:var(--shadow);max-width:340px;}
+.note{color:var(--muted);font-size:.78rem;margin-top:.5rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="text-align:center;margin-bottom:.3rem;font-size:3rem;">🍇</div>
+  <h1 style="text-align:center;">تلميحة</h1>
+  <div class="tag" style="text-align:center;">design tokens · لوحة الهوية</div>
+
+  <h2>Color Palette &amp; Roles</h2>
+  <div class="grid" id="palette"></div>
+
+  <h2>Typography — Tajawal</h2>
+  <div class="type-row"><span class="lbl">Logo / 900</span><span style="font-size:2.6rem;font-weight:900;letter-spacing:-2px;">تلميحة</span></div>
+  <div class="type-row"><span class="lbl">Title / 900</span><span style="font-size:2rem;font-weight:900;">فاز الفريق الأحمر</span></div>
+  <div class="type-row"><span class="lbl">Clue / 900</span><span style="font-size:1.5rem;font-weight:900;">صحراء</span></div>
+  <div class="type-row"><span class="lbl">Card title / 800</span><span style="font-size:.9rem;font-weight:800;color:var(--gold2);">اختر طريقة اللعب</span></div>
+  <div class="type-row"><span class="lbl">Body / 600</span><span style="font-size:1rem;font-weight:600;">شارك الرمز مع أصحابك وابدأوا اللعب.</span></div>
+  <div class="type-row"><span class="lbl">Label / 700</span><span style="font-size:.72rem;font-weight:700;color:var(--text2);">٩ كلمات متبقية</span></div>
+
+  <h2>Buttons</h2>
+  <div class="btns">
+    <button class="btn btn-gold">🚀 ابدأ اللعبة</button>
+    <button class="btn btn-outline">الانضمام ←</button>
+    <button class="btn btn-red">+ أضف</button>
+    <button class="btn btn-blue">⭐ قائداً</button>
+    <button class="btn btn-ghost">⚙ الإعداد</button>
+    <button class="btn btn-doubt">🤔 علامة شك</button>
+  </div>
+
+  <h2>Word Card States</h2>
+  <div class="cards">
+    <div class="wc unrev">جبل</div>
+    <div class="wc red">بحر</div>
+    <div class="wc blue">قمر</div>
+    <div class="wc neutral">نهر</div>
+    <div class="wc assassin">☠ صحراء</div>
+  </div>
+  <div class="note">sand (unrevealed) · red · blue · neutral · assassin</div>
+
+  <h2>Glass Surface (Elevation 2)</h2>
+  <div class="glass">
+    <div style="font-weight:800;color:var(--gold2);margin-bottom:.6rem;">🎮 اختر طريقة اللعب</div>
+    <div style="color:var(--text2);font-size:.88rem;">سطح زجاجي شفّاف فوق سماء ليلية — blur(16px) + شفافية + ظل ناعم.</div>
+  </div>
+</div>
+<script>
+const tokens=[
+ ['--bg','#0A0A0F','Background'],['--surface','#1A1A2E','Surface'],['--surface3','#252545','Raised'],
+ ['--red','#F04060','Red team'],['--red2','#FF7090','Red bright'],
+ ['--blue','#2D6EFF','Blue team'],['--blue2','#6699FF','Blue bright'],
+ ['--gold','#E8A020','Gold / leader'],['--gold2','#FFD060','Gold bright'],
+ ['--grape','#8B5CF6','Grape / brand'],['--grape2','#A78BFA','Grape bright'],
+ ['--doubt','#A855F7','Doubt'],['--sand','#F0E4C8','Card sand'],
+ ['--text','#EEEEFF','Text'],['--text2','#9999BB','Text 2'],['--muted','#555577','Muted'],
+];
+const palette=document.getElementById('palette');
+for(const [v,hex,role] of tokens){
+  const sw=document.createElement('div'); sw.className='swatch';
+  const chip=document.createElement('div'); chip.className='chip'; chip.style.background=hex;
+  const meta=document.createElement('div'); meta.className='meta';
+  const n=document.createElement('div'); n.className='name'; n.textContent=role;
+  const h=document.createElement('div'); h.className='hex'; h.textContent=hex;
+  const t=document.createElement('div'); t.className='hex'; t.textContent=v;
+  meta.append(n,h,t); sw.append(chip,meta); palette.append(sw);
+}
+</script>
+</body>
+</html>
