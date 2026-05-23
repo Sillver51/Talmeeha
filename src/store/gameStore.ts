@@ -1,0 +1,385 @@
+import { create } from "zustand";
+import { io, type Socket } from "socket.io-client";
+import type {
+  ClientToServerEvents,
+  GameState,
+  ServerToClientEvents,
+  Team,
+} from "@/lib/types";
+
+type Mode = "host" | "online";
+
+interface HostTeamSetup {
+  players: string[];
+  leader: string | null;
+  name: string;
+}
+
+interface WinsData {
+  red: number;
+  blue: number;
+  redName: string;
+  blueName: string;
+}
+
+const DEFAULT_RED_NAME = "الفريق الأحمر";
+const DEFAULT_BLUE_NAME = "الفريق الأزرق";
+const WINS_KEY = "talmeeha_wins";
+const NAME_KEY = "tname";
+
+// Client socket: <ListenEvents = ServerToClient, EmitEvents = ClientToServer>.
+type GameSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+
+interface GameStore {
+  socket: GameSocket | null;
+  myId: string | null;
+  myName: string;
+  roomCode: string | null;
+  isHost: boolean;
+  gs: GameState | null;
+  // local UI
+  mode: Mode;
+  doubtMode: boolean;
+  hostViewLeader: boolean;
+  toastMsg: string | null;
+  winsData: WinsData;
+  hSetup: { red: HostTeamSetup; blue: HostTeamSetup };
+  // lifecycle
+  connect(): void;
+  // actions
+  selectMode(m: Mode): void;
+  startHostSetup(name: string): void;
+  addPlayer(t: Team, name: string): void;
+  removePlayer(t: Team, name: string): void;
+  setLeader(t: Team, name: string): void;
+  launchHostGame(redName: string, blueName: string): void;
+  createRoom(name: string): void;
+  joinRoom(code: string, name: string): void;
+  joinTeam(t: Team): void;
+  becomeLeader(t: Team): void;
+  startGame(): void;
+  submitClue(word: string, num: number): void;
+  guessCard(i: number): void;
+  toggleDoubt(i: number): void;
+  endTurn(): void;
+  restart(): void;
+  goHome(): void;
+  toggleDoubtMode(): void;
+  toggleHostView(): void;
+  toast(msg: string): void;
+  resetWins(): void;
+}
+
+function emptyHostSetup(): { red: HostTeamSetup; blue: HostTeamSetup } {
+  return {
+    red: { players: [], leader: null, name: DEFAULT_RED_NAME },
+    blue: { players: [], leader: null, name: DEFAULT_BLUE_NAME },
+  };
+}
+
+const DEFAULT_WINS: WinsData = {
+  red: 0,
+  blue: 0,
+  redName: "الأحمر",
+  blueName: "الأزرق",
+};
+
+// SSR-safe localStorage helpers — never touched at module load / during render.
+function loadWins(): WinsData {
+  if (typeof window === "undefined") return DEFAULT_WINS;
+  try {
+    const s = window.localStorage.getItem(WINS_KEY);
+    if (s) return { ...DEFAULT_WINS, ...(JSON.parse(s) as Partial<WinsData>) };
+  } catch {
+    // ignore corrupt persisted state
+  }
+  return DEFAULT_WINS;
+}
+
+function saveWins(w: WinsData): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(WINS_KEY, JSON.stringify(w));
+  } catch {
+    // ignore quota / private-mode errors
+  }
+}
+
+function loadName(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.sessionStorage.getItem(NAME_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function saveName(n: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(NAME_KEY, n);
+  } catch {
+    // ignore
+  }
+}
+
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+export const useGameStore = create<GameStore>((set, get) => ({
+  socket: null,
+  myId: null,
+  myName: "",
+  roomCode: null,
+  isHost: false,
+  gs: null,
+  mode: "host",
+  doubtMode: false,
+  hostViewLeader: false,
+  toastMsg: null,
+  winsData: DEFAULT_WINS,
+  hSetup: emptyHostSetup(),
+
+  // Idempotent: creates the socket once and hydrates persisted client state.
+  connect() {
+    if (get().socket) return;
+    const socket: GameSocket = io();
+
+    socket.on("joined", ({ code, myId, isHost }) => {
+      set({ myId, roomCode: code, isHost });
+    });
+
+    socket.on("state", (state) => {
+      set({ gs: state });
+      // Mirror legacy: keep wins in sync with authoritative server state.
+      if (state.wins) {
+        const next: WinsData = {
+          red: state.wins.red ?? 0,
+          blue: state.wins.blue ?? 0,
+          redName: state.teamNames?.red ?? get().winsData.redName,
+          blueName: state.teamNames?.blue ?? get().winsData.blueName,
+        };
+        saveWins(next);
+        set({ winsData: next });
+      }
+    });
+
+    socket.on("error", (msg) => {
+      get().toast(msg);
+    });
+
+    set({ socket, winsData: loadWins(), myName: loadName() });
+  },
+
+  selectMode(m) {
+    set({ mode: m });
+  },
+
+  startHostSetup(name) {
+    const n = name.trim();
+    if (!n) {
+      get().toast("أدخل اسمك");
+      return;
+    }
+    saveName(n);
+    set({ myName: n, hSetup: emptyHostSetup() });
+  },
+
+  addPlayer(t, name) {
+    const n = name.trim();
+    if (!n) {
+      get().toast("أدخل الاسم");
+      return;
+    }
+    const team = get().hSetup[t];
+    if (team.players.includes(n)) {
+      get().toast("الاسم موجود");
+      return;
+    }
+    set((s) => ({
+      hSetup: {
+        ...s.hSetup,
+        [t]: { ...team, players: [...team.players, n] },
+      },
+    }));
+  },
+
+  removePlayer(t, name) {
+    set((s) => {
+      const team = s.hSetup[t];
+      return {
+        hSetup: {
+          ...s.hSetup,
+          [t]: {
+            ...team,
+            players: team.players.filter((p) => p !== name),
+            leader: team.leader === name ? null : team.leader,
+          },
+        },
+      };
+    });
+  },
+
+  setLeader(t, name) {
+    set((s) => ({
+      hSetup: { ...s.hSetup, [t]: { ...s.hSetup[t], leader: name } },
+    }));
+  },
+
+  launchHostGame(redName, blueName) {
+    const rName = redName.trim() || DEFAULT_RED_NAME;
+    const bName = blueName.trim() || DEFAULT_BLUE_NAME;
+    const { socket, hSetup, myName, winsData } = get();
+    if (!socket) return;
+    const redLeader = hSetup.red.leader;
+    const blueLeader = hSetup.blue.leader;
+    if (!redLeader || !blueLeader) {
+      get().toast("عيّن قائداً لكل فريق");
+      return;
+    }
+    const nextWins: WinsData = { ...winsData, redName: rName, blueName: bName };
+    saveWins(nextWins);
+    set({
+      isHost: true,
+      hostViewLeader: false,
+      doubtMode: false,
+      winsData: nextWins,
+      hSetup: {
+        red: { ...hSetup.red, name: rName },
+        blue: { ...hSetup.blue, name: bName },
+      },
+    });
+    socket.emit("create_host", {
+      hostName: myName,
+      redName: rName,
+      blueName: bName,
+      redPlayers: hSetup.red.players,
+      redLeader,
+      bluePlayers: hSetup.blue.players,
+      blueLeader,
+    });
+  },
+
+  createRoom(name) {
+    const n = name.trim();
+    if (!n) {
+      get().toast("أدخل اسمك");
+      return;
+    }
+    const { socket } = get();
+    if (!socket) return;
+    saveName(n);
+    set({ myName: n, isHost: false });
+    socket.emit("create_online", { name: n });
+  },
+
+  joinRoom(code, name) {
+    const n = name.trim();
+    const c = code.trim();
+    if (!n) {
+      get().toast("أدخل اسمك");
+      return;
+    }
+    if (c.length !== 4) {
+      get().toast("الرمز 4 أرقام");
+      return;
+    }
+    const { socket } = get();
+    if (!socket) return;
+    saveName(n);
+    set({ myName: n, isHost: false });
+    socket.emit("join_online", { code: c, name: n });
+  },
+
+  joinTeam(t) {
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("select_team", { code: roomCode, team: t });
+  },
+
+  becomeLeader(t) {
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("become_leader", { code: roomCode, team: t });
+    get().toast("أصبحت قائد! 🍇");
+  },
+
+  startGame() {
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("start_game", { code: roomCode });
+  },
+
+  submitClue(word, num) {
+    const w = word.trim();
+    if (!w) {
+      get().toast("أدخل كلمة التلميح");
+      return;
+    }
+    if (w.includes(" ")) {
+      get().toast("كلمة واحدة فقط!");
+      return;
+    }
+    if (!num || num < 1) {
+      get().toast("أدخل عدداً");
+      return;
+    }
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("submit_clue", { code: roomCode, word: w, num });
+  },
+
+  guessCard(i) {
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("guess_card", { code: roomCode, index: i });
+  },
+
+  toggleDoubt(i) {
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("toggle_doubt", { code: roomCode, index: i });
+  },
+
+  endTurn() {
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("end_turn", { code: roomCode });
+  },
+
+  restart() {
+    const { socket, roomCode } = get();
+    set({ doubtMode: false });
+    if (!socket || !roomCode) return;
+    socket.emit("restart", { code: roomCode });
+  },
+
+  goHome() {
+    set({
+      roomCode: null,
+      gs: null,
+      isHost: false,
+      doubtMode: false,
+    });
+  },
+
+  toggleDoubtMode() {
+    set((s) => ({ doubtMode: !s.doubtMode }));
+  },
+
+  toggleHostView() {
+    set((s) => ({ hostViewLeader: !s.hostViewLeader }));
+  },
+
+  toast(msg) {
+    set({ toastMsg: msg });
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => set({ toastMsg: null }), 2600);
+  },
+
+  resetWins() {
+    const next: WinsData = { ...get().winsData, red: 0, blue: 0 };
+    saveWins(next);
+    set({ winsData: next });
+    get().toast("تم تصفير السكور 🍇");
+  },
+}));
