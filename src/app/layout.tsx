@@ -18,7 +18,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ar" dir="rtl">
+    // suppressHydrationWarning: browser extensions inject attributes (e.g. crxemulator)
+    // onto <html> before React hydrates; this scopes the suppression to this element only.
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={tajawal.variable}>{children}</body>
     </html>
   );
