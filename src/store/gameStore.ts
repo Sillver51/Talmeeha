@@ -159,6 +159,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     socket.on("state", (state) => {
       set({ gs: state });
+      // Mirror legacy `render()`/`show()`: any incoming non-setup state drives
+      // the screen back off the host-mode `clientScreen` override (e.g. after
+      // the host gear opened setup mid-round, the next push returns to game).
+      if (state.phase !== "setup" && get().clientScreen !== "home") {
+        set({ clientScreen: "home" });
+      }
       // Mirror legacy: keep wins in sync with authoritative server state.
       if (state.wins) {
         const next: WinsData = {

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Toast from "@/components/brand/Toast";
+import GameScreen from "@/components/screens/GameScreen";
 import HomeScreen from "@/components/screens/HomeScreen";
 import LobbyScreen from "@/components/screens/LobbyScreen";
 import SetupScreen from "@/components/screens/SetupScreen";
@@ -37,6 +38,10 @@ function renderScreen(phase: Phase | null, clientScreen: "home" | "setup") {
   if (!phase) {
     return clientScreen === "setup" ? <SetupScreen /> : <HomeScreen />;
   }
+  // Host gear during a game (legacy `show('setup')`): reconfigure mid-round.
+  if (clientScreen === "setup") {
+    return <SetupScreen />;
+  }
   switch (phase) {
     case "setup":
       return <SetupScreen />;
@@ -44,12 +49,7 @@ function renderScreen(phase: Phase | null, clientScreen: "home" | "setup") {
       return <LobbyScreen />;
     case "playing":
     case "ended":
-      // GameScreen arrives in Group C.
-      return (
-        <div className="screen on">
-          <div>اللعبة قيد الإنشاء…</div>
-        </div>
-      );
+      return <GameScreen />;
     default:
       return <HomeScreen />;
   }

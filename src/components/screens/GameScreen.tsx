@@ -1,0 +1,87 @@
+"use client";
+
+import ActionRow from "@/components/game/ActionRow";
+import Board from "@/components/game/Board";
+import CluePanel from "@/components/game/CluePanel";
+import Counters from "@/components/game/Counters";
+import GameHeader from "@/components/game/GameHeader";
+import GameLog from "@/components/game/GameLog";
+import HostBar from "@/components/game/HostBar";
+import LeaderPanel from "@/components/game/LeaderPanel";
+import { hGuesser, hLeader, myRole, myTurn } from "@/lib/ui/roles";
+import { useGameStore } from "@/store/gameStore";
+import WinModal from "./WinModal";
+
+/**
+ * In-game screen (`#s-game`) — composes the game components and ports the
+ * role/phase-based visibility from legacy `renderGame` (~1061–1176). Renders the
+ * win modal when `phase==='ended'`.
+ */
+export default function GameScreen() {
+  const gs = useGameStore((s) => s.gs);
+  const myId = useGameStore((s) => s.myId);
+  const isHost = useGameStore((s) => s.isHost);
+  const doubtMode = useGameStore((s) => s.doubtMode);
+  const winsData = useGameStore((s) => s.winsData);
+
+  if (!gs || !gs.board || !gs.board.length) return null;
+
+  const role = myRole(gs, myId, isHost);
+  const isLeader = role === "leader";
+  const isMyTurn = myTurn(gs, myId);
+  const playing = gs.phase === "playing";
+  const myTeam = myId ? (gs.players[myId]?.team ?? null) : null;
+
+  const showCpb = isHost && playing;
+  const showLP =
+    (isHost && !gs.gphase && playing) ||
+    (isLeader && isMyTurn && !gs.gphase && playing);
+  const showActionRow = !isHost && !isLeader && isMyTurn && gs.gphase && playing;
+
+  const cpbText = gs.gphase
+    ? `يخمّن: ${hGuesser(gs)} — انقر الكلمة | Shift+انقر للشك 🤔`
+    : `القائد: ${hLeader(gs)} — أدخل التلميح`;
+
+  return (
+    <div className="screen game-on" id="s-game">
+      <GameHeader
+        gs={gs}
+        role={role}
+        myId={myId}
+        doubtMode={doubtMode}
+        winsRed={winsData.red || 0}
+        winsBlue={winsData.blue || 0}
+      />
+
+      {isHost && <HostBar gphase={gs.gphase} />}
+
+      {showCpb && (
+        <div
+          className="current-player-badge"
+          id="current-player-badge"
+          style={{ display: "flex" }}
+        >
+          <span>👤</span>
+          <span id="cpb-text">{cpbText}</span>
+        </div>
+      )}
+
+      <Counters gs={gs} />
+      <CluePanel gs={gs} />
+
+      {showLP && <LeaderPanel gs={gs} isHost={isHost} />}
+      {showActionRow && <ActionRow />}
+
+      <Board
+        gs={gs}
+        role={role}
+        myId={myId}
+        myTeam={myTeam}
+        isMyTurn={isMyTurn}
+      />
+      <GameLog log={gs.log ?? []} />
+
+      {gs.phase === "ended" && <WinModal gs={gs} />}
+    </div>
+  );
+}
