@@ -10,3 +10,9 @@ coverage/
 # TypeScript / Next.js generated
 *.tsbuildinfo
 next-env.d.ts
+
+# Test / Playwright artifacts
+.playwright-mcp/
+test-results/
+playwright-report/
+/baseline-home.png
