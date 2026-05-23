@@ -2,7 +2,12 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createServer, type Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
 import { io as Client, type Socket } from "socket.io-client";
-import type { GameState, Team } from "@/lib/types";
+import type {
+  ClientToServerEvents,
+  GameState,
+  ServerToClientEvents,
+  Team,
+} from "@/lib/types";
 import { registerHandlers } from "../../server/socket";
 
 let http: HttpServer;
@@ -10,7 +15,7 @@ let url: string;
 
 beforeAll(async () => {
   http = createServer();
-  const ioServer = new Server(http);
+  const ioServer = new Server<ClientToServerEvents, ServerToClientEvents>(http);
   ioServer.on("connection", (s) => registerHandlers(ioServer, s));
   await new Promise<void>((r) => http.listen(0, r));
   const addr = http.address();

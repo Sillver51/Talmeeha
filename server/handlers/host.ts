@@ -1,5 +1,12 @@
 import type { Server, Socket } from "socket.io";
-import type { GameState, HostTeam, Player, Team } from "@/lib/types";
+import type {
+  ClientToServerEvents,
+  GameState,
+  HostTeam,
+  Player,
+  ServerToClientEvents,
+  Team,
+} from "@/lib/types";
 import { store } from "../rooms";
 import { createHostSchema } from "@/lib/schemas";
 import { buildBoard, remaining } from "@/lib/game";
@@ -7,7 +14,10 @@ import { WORDS } from "@/lib/words";
 
 // Port of legacy `create_host` (server.js:78-112): host-mode room with synthetic
 // players hRed/hBlue, populated players/teams/leaders, sRed/sBlue counts.
-export function registerHostHandlers(io: Server, socket: Socket): void {
+export function registerHostHandlers(
+  io: Server<ClientToServerEvents, ServerToClientEvents>,
+  socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+): void {
   socket.on("create_host", (payload) => {
     const parsed = createHostSchema.safeParse(payload);
     if (!parsed.success) {

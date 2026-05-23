@@ -69,6 +69,14 @@ describe("resolveGuess", () => {
     expect(n.phase).toBe("ended");
     expect(n.winner).toBe("red");
   });
+  it("a winning own-color hit logs the hit line then the trophy", () => {
+    const s = state([c("بحر", "red"), c("قمر", "blue")], { gleft: 2, sRed: 1 });
+    const { state: n, outcome } = resolveGuess(s, 0, "لاعب");
+    expect(outcome).toBe("win");
+    expect(n.winner).toBe("red");
+    expect(n.log[0]).toContain("🏆"); // trophy is newest
+    expect(n.log.some((l) => l.includes("إصابة"))).toBe(true); // hit line also present
+  });
   it("ignores an already-revealed card", () => {
     const s = state([c("بحر", "red", true)]);
     const { outcome } = resolveGuess(s, 0, "لاعب");

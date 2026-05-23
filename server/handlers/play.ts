@@ -1,5 +1,5 @@
 import type { Server, Socket } from "socket.io";
-import type { GameState } from "@/lib/types";
+import type { ClientToServerEvents, GameState, ServerToClientEvents } from "@/lib/types";
 import { store } from "../rooms";
 import {
   submitClueSchema,
@@ -13,7 +13,10 @@ import { hLeader, hGuesser, rotateGuesser } from "./hostNames";
 // Ports the four play events from server.js (submit_clue 189-203, guess_card 206-248,
 // toggle_doubt 251-261, end_turn 264-273). Handlers stay thin: validate → authorize →
 // call a pure engine function → store → broadcast.
-export function registerPlayHandlers(io: Server, socket: Socket): void {
+export function registerPlayHandlers(
+  io: Server<ClientToServerEvents, ServerToClientEvents>,
+  socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+): void {
   // ── SUBMIT CLUE ──
   socket.on("submit_clue", (payload) => {
     const parsed = submitClueSchema.safeParse(payload);

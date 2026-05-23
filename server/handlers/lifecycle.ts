@@ -1,12 +1,15 @@
 import type { Server, Socket } from "socket.io";
-import type { GameState, Team } from "@/lib/types";
+import type { ClientToServerEvents, GameState, ServerToClientEvents, Team } from "@/lib/types";
 import { store } from "../rooms";
 import { startGameSchema, restartSchema } from "@/lib/schemas";
 import { buildBoard, remaining } from "@/lib/game";
 import { WORDS } from "@/lib/words";
 
 // Ports legacy start_game (172-186), restart (276-288), disconnect (291-308).
-export function registerLifecycleHandlers(io: Server, socket: Socket): void {
+export function registerLifecycleHandlers(
+  io: Server<ClientToServerEvents, ServerToClientEvents>,
+  socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+): void {
   // ── START GAME (online) ──
   socket.on("start_game", (payload) => {
     const parsed = startGameSchema.safeParse(payload);

@@ -1,10 +1,13 @@
 import type { Server, Socket } from "socket.io";
-import type { GameState } from "@/lib/types";
+import type { ClientToServerEvents, GameState, ServerToClientEvents } from "@/lib/types";
 import { store } from "../rooms";
 import { createOnlineSchema, joinOnlineSchema } from "@/lib/schemas";
 
 // Ports legacy `create_online` (server.js:115-130) and `join_online` (server.js:133-142).
-export function registerOnlineHandlers(io: Server, socket: Socket): void {
+export function registerOnlineHandlers(
+  io: Server<ClientToServerEvents, ServerToClientEvents>,
+  socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+): void {
   socket.on("create_online", (payload) => {
     const parsed = createOnlineSchema.safeParse(payload);
     if (!parsed.success) {

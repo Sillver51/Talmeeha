@@ -1,5 +1,11 @@
 import type { Server, Socket } from "socket.io";
-import type { GameState, Player, Team } from "@/lib/types";
+import type {
+  ClientToServerEvents,
+  GameState,
+  Player,
+  ServerToClientEvents,
+  Team,
+} from "@/lib/types";
 import { store } from "../rooms";
 import { selectTeamSchema, becomeLeaderSchema } from "@/lib/schemas";
 
@@ -12,7 +18,10 @@ function removeFromTeams(room: GameState, id: string): Record<Team, string[]> {
 }
 
 // Ports legacy `select_team` (server.js:145-155) and `become_leader` (server.js:158-169).
-export function registerTeamHandlers(io: Server, socket: Socket): void {
+export function registerTeamHandlers(
+  io: Server<ClientToServerEvents, ServerToClientEvents>,
+  socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+): void {
   socket.on("select_team", (payload) => {
     const parsed = selectTeamSchema.safeParse(payload);
     if (!parsed.success) {
