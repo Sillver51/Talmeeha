@@ -16,3 +16,6 @@ next-env.d.ts
 test-results/
 playwright-report/
 /baseline-home.png
+
+# Brainstorming visual-companion working dir
+.superpowers/
