@@ -1,6 +1,8 @@
 "use client";
 
 import type { PlayerView } from "@/lib/types";
+import { usePrefsStore } from "@/store/prefsStore";
+import { formatNumber } from "@/lib/i18n/digits";
 
 /**
  * Clue panel (`.clue-panel`) — ports legacy markup (~792–796) + render logic
@@ -13,6 +15,7 @@ interface CluePanelProps {
 }
 
 export default function CluePanel({ gs }: CluePanelProps) {
+  const digits = usePrefsStore((s) => s.digits);
   return (
     <div className="clue-panel">
       <span className="clue-label-sm">التلميح:</span>
@@ -20,7 +23,7 @@ export default function CluePanel({ gs }: CluePanelProps) {
         <span id="clue-display">
           <span className="clue-word-big">{gs.clue.w}</span>
           &nbsp;
-          <span className="clue-num-circle">{gs.clue.n}</span>
+          <span className="clue-num-circle">{formatNumber(gs.clue.n, digits)}</span>
         </span>
       ) : (
         <span className="clue-wait" id="clue-display">
@@ -28,7 +31,7 @@ export default function CluePanel({ gs }: CluePanelProps) {
         </span>
       )}
       <span className="guesses-left" id="g-left">
-        {gs.clue && gs.gphase ? `تبقّى ${gs.gleft} تخمينات` : ""}
+        {gs.clue && gs.gphase ? `تبقّى ${formatNumber(gs.gleft, digits)} تخمينات` : ""}
       </span>
     </div>
   );

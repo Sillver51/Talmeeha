@@ -2,6 +2,8 @@
 
 import type { PlayerView } from "@/lib/types";
 import TeamGlyph from "@/components/brand/TeamGlyph";
+import { usePrefsStore } from "@/store/prefsStore";
+import { formatNumber } from "@/lib/i18n/digits";
 
 /**
  * Counter pills (`.counters`) — ports legacy markup (~784–790) + render logic
@@ -17,6 +19,7 @@ export default function Counters({ gs }: CountersProps) {
   const remB = gs.counts.blue;
   const remN = gs.counts.neutral;
   const totalDoubts = gs.doubts ? Object.keys(gs.doubts).length : 0;
+  const digits = usePrefsStore((s) => s.digits);
   const tn = gs.teamNames;
 
   const ended = gs.phase === "ended";
@@ -34,23 +37,23 @@ export default function Counters({ gs }: CountersProps) {
       <div className="counter-pill cp-red">
         <span className="dot dot-red"></span>
         <TeamGlyph team="red" />
-        <span id="rem-r">{remR}</span>
+        <span id="rem-r">{formatNumber(remR, digits)}</span>
       </div>
       <div className="counter-pill cp-blue">
         <span className="dot dot-blue"></span>
         <TeamGlyph team="blue" />
-        <span id="rem-b">{remB}</span>
+        <span id="rem-b">{formatNumber(remB, digits)}</span>
       </div>
       <div className="counter-pill">
         <span className="dot dot-n"></span>
-        <span id="rem-n">{remN}</span>
+        <span id="rem-n">{formatNumber(remN, digits)}</span>
       </div>
       <div className={turnChipClass} id="turn-chip">
         {turnChipText}
       </div>
       {totalDoubts > 0 && (
         <div className="doubt-pill" id="doubt-pill" style={{ display: "flex" }}>
-          🤔 <span id="doubt-pill-count">{totalDoubts}</span> مشكوك
+          🤔 <span id="doubt-pill-count">{formatNumber(totalDoubts, digits)}</span> مشكوك
         </div>
       )}
     </div>
