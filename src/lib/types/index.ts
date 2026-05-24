@@ -2,6 +2,21 @@ export type Team = "red" | "blue";
 export type CardType = Team | "neutral" | "assassin";
 export type Phase = "lobby" | "setup" | "playing" | "ended";
 
+/** A card type as seen by a viewer: real type, or "hidden" when the viewer may not see the key. */
+export type VisibleCardType = CardType | "hidden";
+
+/** A board card in a projected, per-viewer view. */
+export interface ViewCard { w: string; t: VisibleCardType; rv: boolean; }
+
+/** Public remaining (unrevealed) counts — safe to show everyone. */
+export interface RemainingCounts { red: number; blue: number; neutral: number; }
+
+/** What a single client receives: the room state with a role-filtered board + public counts. */
+export interface PlayerView extends Omit<GameState, "board"> {
+  board: ViewCard[];
+  counts: RemainingCounts;
+}
+
 export interface Card { w: string; t: CardType; rv: boolean; }
 export interface Player { id: string; name: string; team: Team | null; }
 export interface Clue { w: string; n: number; }
