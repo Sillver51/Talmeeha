@@ -11,16 +11,16 @@
   --border:  rgba(255,255,255,0.06);
   --border2: rgba(255,255,255,0.11);
 
-  /* teams */
-  --red:    #F04060;
-  --red2:   #FF7090;
-  --red-bg: rgba(240,64,96,0.12);
-  --red-glow: rgba(240,64,96,0.06);
+  /* teams (Neon Night) */
+  --red:    #FF4D8D;
+  --red2:   #FF8FB6;
+  --red-bg: rgba(255,77,141,0.12);
+  --red-glow: rgba(255,77,141,0.08);
 
-  --blue:    #2D6EFF;
-  --blue2:   #6699FF;
-  --blue-bg: rgba(45,110,255,0.12);
-  --blue-glow: rgba(45,110,255,0.06);
+  --blue:    #34A8FF;
+  --blue2:   #9AD2FF;
+  --blue-bg: rgba(52,168,255,0.12);
+  --blue-glow: rgba(52,168,255,0.08);
 
   /* accents */
   --gold:   #E8A020;
@@ -52,6 +52,12 @@
 
   --r:14px; --r-sm:9px; --r-lg:22px;
   --shadow: 0 8px 32px rgba(0,0,0,0.5);
+
+  /* Neon Night additions */
+  --cyan: #34E0E0;
+  --glass:     rgba(255,255,255,.045);
+  --glass-brd: rgba(255,255,255,.10);
+  --grad-signature: linear-gradient(90deg, var(--grape) 0%, var(--gold) 50%, var(--cyan) 100%);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -419,21 +425,22 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 
 /* base card */
 .wc{
-  background:linear-gradient(145deg,#F5E8C4,#EDD99A);
-  color:#1A0E04;
+  background:var(--glass);
+  color:var(--text);
+  backdrop-filter:blur(6px);
   border-radius:12px;
   padding:.55rem .25rem;
   text-align:center;
   font-weight:900;
   font-size:.82rem;
-  border:2px solid rgba(0,0,0,0.08);
+  border:1px solid var(--glass-brd);
   min-height:54px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   user-select:none;line-height:1.2;
   position:relative;overflow:hidden;
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   cursor:pointer;
-  box-shadow:0 4px 12px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.3);
+  box-shadow:0 4px 14px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
   letter-spacing:.2px;
 }
 .wc::after{
@@ -443,8 +450,8 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 }
 .wc:hover:not(.rv){
   transform:translateY(-4px) scale(1.04);
-  box-shadow:0 10px 28px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.3);
-  background:linear-gradient(145deg,#FFF0C8,#F5DE9A);
+  box-shadow:0 10px 28px rgba(0,0,0,.55), 0 0 0 1px var(--glass-brd) inset;
+  background:rgba(255,255,255,.08);
 }
 .wc:active:not(.rv){transform:translateY(-1px) scale(1.01);}
 .wc.rv{cursor:default;transform:none;box-shadow:0 2px 8px rgba(0,0,0,.3);}
@@ -526,6 +533,13 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   border-color:#2D6EFF;
   color:#C0D8FF;font-weight:900;
   text-shadow:0 1px 4px rgba(0,0,0,.6);
+}
+.wc.h-neutral{
+  background:linear-gradient(145deg,#3A3020,#2C2418);
+  border-color:#A08040;
+  color:#D4B870;
+  font-weight:800;
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
 }
 .wc.h-assassin{
   background:linear-gradient(145deg,#1A0808,#100505);
@@ -639,3 +653,25 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 .muted{color:var(--muted);font-size:.8rem;}
 .tc{text-align:center;}
 .mt{margin-top:.65rem;}
+
+/* ─── COLORBLIND PALETTE (Wong) — toggled via prefs ─── */
+[data-palette="colorblind"]{
+  --red:    #E69F00;  /* orange */
+  --red2:   #F6C453;
+  --red-bg: rgba(230,159,0,0.14);
+  --red-glow: rgba(230,159,0,0.10);
+
+  --blue:    #0072B2;  /* blue */
+  --blue2:   #56A8DE;
+  --blue-bg: rgba(0,114,178,0.16);
+  --blue-glow: rgba(0,114,178,0.10);
+}
+
+/* ─── REDUCED MOTION (in-app toggle: "on" forces off) ─── */
+html[data-reduced-motion="on"] *,
+html[data-reduced-motion="on"] *::before,
+html[data-reduced-motion="on"] *::after{
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
