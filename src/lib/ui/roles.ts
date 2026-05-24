@@ -1,13 +1,16 @@
-import type { GameState, HostTeam, Team } from "@/lib/types";
+import type { GameState, HostTeam, PlayerView, Team } from "@/lib/types";
 
 export type Role = "host" | "leader" | "guesser" | "spectator";
+
+/** Role helpers read only shared fields, so they accept the authoritative state or a client view. */
+type GameView = GameState | PlayerView;
 
 /**
  * Determine the local client's role.
  * Ported from legacy `myRole` (public/index.html ~948–955).
  */
 export function myRole(
-  gs: GameState | null,
+  gs: GameView | null,
   myId: string | null,
   isHost: boolean,
 ): Role {
@@ -24,13 +27,13 @@ export function myRole(
  * Whether it is the local player's team's turn.
  * Ported from legacy `myTurn` (public/index.html ~956).
  */
-export function myTurn(gs: GameState | null, myId: string | null): boolean {
+export function myTurn(gs: GameView | null, myId: string | null): boolean {
   if (!gs || !myId) return false;
   return gs.players[myId]?.team === gs.turn;
 }
 
 /** Host-team data for a given team (legacy `htd`, ~995). */
-function htd(gs: GameState, team: Team): HostTeam | undefined {
+function htd(gs: GameView, team: Team): HostTeam | undefined {
   return team === "red" ? gs.hRed : gs.hBlue;
 }
 
@@ -38,7 +41,7 @@ function htd(gs: GameState, team: Team): HostTeam | undefined {
  * Host-mode current leader name for the on-turn team.
  * Ported from legacy `hLeader` (~996); returns "" when host data is absent.
  */
-export function hLeader(gs: GameState): string {
+export function hLeader(gs: GameView): string {
   return htd(gs, gs.turn)?.leader ?? "";
 }
 
@@ -47,7 +50,7 @@ export function hLeader(gs: GameState): string {
  * player rotated by `gIdx`, falling back to the first player.
  * Ported from legacy `hGuesser` (~997–1002); returns "" when host data is absent.
  */
-export function hGuesser(gs: GameState): string {
+export function hGuesser(gs: GameView): string {
   const td = htd(gs, gs.turn);
   if (!td) return "";
   const guessers = td.players.filter((n) => n !== td.leader);

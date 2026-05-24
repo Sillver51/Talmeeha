@@ -1,6 +1,6 @@
 "use client";
 
-import type { GameState } from "@/lib/types";
+import type { PlayerView } from "@/lib/types";
 import { hGuesser, hLeader, type Role } from "@/lib/ui/roles";
 
 /**
@@ -9,7 +9,7 @@ import { hGuesser, hLeader, type Role } from "@/lib/ui/roles";
  * names, per-team wins badges, and a role/phase-dependent turn-box message.
  */
 interface GameHeaderProps {
-  gs: GameState;
+  gs: PlayerView;
   role: Role;
   myId: string | null;
   doubtMode: boolean;
@@ -19,7 +19,7 @@ interface GameHeaderProps {
 
 /** Ports the turn-box text + class logic (legacy ~1098–1106). */
 function turnBox(
-  gs: GameState,
+  gs: PlayerView,
   role: Role,
   myId: string | null,
   doubtMode: boolean,

@@ -8,6 +8,7 @@ import {
   endTurnSchema,
 } from "@/lib/schemas";
 import { submitClue, resolveGuess, toggleDoubt, nextTurn } from "@/lib/game";
+import { broadcastState } from "../emit";
 import { hLeader, hGuesser, rotateGuesser } from "./hostNames";
 
 // Ports the four play events from server.js (submit_clue 189-203, guess_card 206-248,
@@ -40,7 +41,7 @@ export function registerPlayHandlers(
     const next = submitClue(room, word, num, by);
 
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 
   // ── GUESS CARD ──
@@ -77,7 +78,7 @@ export function registerPlayHandlers(
     }
 
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 
   // ── TOGGLE DOUBT ──
@@ -96,7 +97,7 @@ export function registerPlayHandlers(
     const next = toggleDoubt(room, index, key);
 
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 
   // ── END TURN ──
@@ -121,7 +122,7 @@ export function registerPlayHandlers(
     const next = nextTurn({ ...room, log: ["⏭ انتهى الدور", ...room.log] });
 
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 }
 

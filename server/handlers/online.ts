@@ -1,6 +1,7 @@
 import type { Server, Socket } from "socket.io";
 import type { ClientToServerEvents, GameState, ServerToClientEvents } from "@/lib/types";
 import { store } from "../rooms";
+import { broadcastState } from "../emit";
 import { createOnlineSchema, joinOnlineSchema } from "@/lib/schemas";
 
 // Ports legacy `create_online` (server.js:115-130) and `join_online` (server.js:133-142).
@@ -41,7 +42,7 @@ export function registerOnlineHandlers(
     store.set(code, room);
     socket.join(code);
     socket.emit("joined", { code, myId: socket.id, isHost: false });
-    io.to(code).emit("state", room);
+    void broadcastState(io, code);
   });
 
   socket.on("join_online", (payload) => {
@@ -68,6 +69,6 @@ export function registerOnlineHandlers(
     store.set(code, next);
     socket.join(code);
     socket.emit("joined", { code, myId: socket.id, isHost: false });
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 }

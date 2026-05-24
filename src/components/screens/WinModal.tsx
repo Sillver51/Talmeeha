@@ -1,6 +1,6 @@
 "use client";
 
-import type { GameState, Team } from "@/lib/types";
+import type { PlayerView, Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
 
 /**
@@ -10,7 +10,7 @@ import { useGameStore } from "@/store/gameStore";
  * "🔄 جولة جديدة" / "🏠 الرئيسية" actions. Rendered only when `phase==='ended'`.
  */
 interface WinModalProps {
-  gs: GameState;
+  gs: PlayerView;
 }
 
 interface ScoreboardCardProps {

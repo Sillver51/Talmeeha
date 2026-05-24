@@ -5,6 +5,7 @@ import { io as Client, type Socket } from "socket.io-client";
 import type {
   ClientToServerEvents,
   GameState,
+  PlayerView,
   ServerToClientEvents,
   Team,
 } from "@/lib/types";
@@ -29,7 +30,7 @@ function connect(): Socket {
   return Client(url, { transports: ["websocket"], forceNew: true });
 }
 
-const next = (s: Socket, ev: string): Promise<GameState> =>
+const next = (s: Socket, ev: string): Promise<PlayerView> =>
   new Promise((res) => s.once(ev, res));
 
 const nextJoined = (s: Socket): Promise<{ code: string; myId: string; isHost: boolean }> =>
@@ -37,9 +38,9 @@ const nextJoined = (s: Socket): Promise<{ code: string; myId: string; isHost: bo
 
 // Waits for a `state` broadcast that satisfies the predicate (events arrive across
 // independent sockets with no cross-socket ordering guarantee, so we poll deterministically).
-function waitForState(s: Socket, pred: (st: GameState) => boolean): Promise<GameState> {
+function waitForState(s: Socket, pred: (st: PlayerView) => boolean): Promise<PlayerView> {
   return new Promise((res) => {
-    const handler = (st: GameState) => {
+    const handler = (st: PlayerView) => {
       if (pred(st)) {
         s.off("state", handler);
         res(st);
@@ -49,7 +50,7 @@ function waitForState(s: Socket, pred: (st: GameState) => boolean): Promise<Game
   });
 }
 
-const teamsReady = (st: GameState): boolean =>
+const teamsReady = (st: PlayerView): boolean =>
   st.teams.red.length >= 2 &&
   st.teams.blue.length >= 2 &&
   st.leaders.red !== null &&
@@ -59,7 +60,7 @@ const teamsReady = (st: GameState): boolean =>
 // Layout: red leader = host, blue leader = guest, red member = redMember, blue member = blueMember.
 async function startOnlineGame(): Promise<{
   code: string;
-  state: GameState;
+  state: PlayerView;
   host: Socket;
   guest: Socket;
   redMember: Socket;

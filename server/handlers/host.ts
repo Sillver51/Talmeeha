@@ -8,6 +8,7 @@ import type {
   Team,
 } from "@/lib/types";
 import { store } from "../rooms";
+import { broadcastState } from "../emit";
 import { createHostSchema } from "@/lib/schemas";
 import { buildBoard, remaining } from "@/lib/game";
 import { WORDS } from "@/lib/words";
@@ -79,6 +80,6 @@ export function registerHostHandlers(
     store.set(code, room);
     socket.join(code);
     socket.emit("joined", { code, myId: socket.id, isHost: true });
-    io.to(code).emit("state", room);
+    void broadcastState(io, code);
   });
 }

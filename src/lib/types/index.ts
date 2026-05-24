@@ -69,7 +69,7 @@ export interface ClientToServerEvents {
 }
 
 export interface ServerToClientEvents {
-  state: (s: GameState) => void;
+  state: (s: PlayerView) => void;
   joined: (p: Joined) => void;
   error: (msg: string) => void;
 }

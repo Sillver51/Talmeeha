@@ -1,6 +1,6 @@
 "use client";
 
-import type { GameState } from "@/lib/types";
+import type { PlayerView } from "@/lib/types";
 
 /**
  * Clue panel (`.clue-panel`) — ports legacy markup (~792–796) + render logic
@@ -9,7 +9,7 @@ import type { GameState } from "@/lib/types";
  * "في انتظار القائد..." waiting state.
  */
 interface CluePanelProps {
-  gs: GameState;
+  gs: PlayerView;
 }
 
 export default function CluePanel({ gs }: CluePanelProps) {
