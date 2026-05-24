@@ -10,6 +10,32 @@
 
 ---
 
+## 0. Neon Night (Phase 1) — live system
+
+The shipped UI runs the **Neon Night** evolution of this design system (spec:
+[`docs/superpowers/specs/2026-05-23-talmeeha-redesign-design.md`](docs/superpowers/specs/2026-05-23-talmeeha-redesign-design.md)).
+Where this differs from the values further down, **Neon Night is canonical**:
+
+- **Glass tiles, not sand.** Unrevealed word cards are dark glass (`--glass
+  rgba(255,255,255,.045)` / `--glass-brd rgba(255,255,255,.10)`), not the sand gradient.
+- **Neon team colors:** `--red #FF4D8D` / `--red2 #FF8FB6`, `--blue #34A8FF` /
+  `--blue2 #9AD2FF`. New accent `--cyan #34E0E0`.
+- **Signature gradient:** `--grad-signature` = grape → gold → cyan (clue word, active toggles).
+- **Color-independent team identity:** every team is also marked by a **glyph** — `▲` red,
+  `⬣` blue (`<TeamGlyph/>`), shown on scores, counters, and (for key-holders) cards. Color
+  is never the only signal.
+- **Accessibility, via `<html>` `data-*` attributes** (set by `prefsStore`, persisted):
+  - `[data-palette="colorblind"]` → Wong palette (`--red #E69F00`, `--blue #0072B2`).
+    *Known gap:* some chrome accents still use literal rgba and don't recolor — the glyphs
+    carry the guaranteed color-independent identity.
+  - `[data-reduced-motion="on"]` kills animation/transition; the OS `prefers-reduced-motion`
+    query is also honored for in-game motion.
+  - `[data-digits="eastern"]` renders numbers as `٠–٩` (`formatNumber` / `formatDigits`).
+- **Leaders see the FULL key** (red/blue/neutral/assassin), server-enforced via
+  `projectStateFor` — guessers receive `t:"hidden"` for unrevealed cards (see spec §6).
+
+---
+
 ## 1. Visual Theme & Atmosphere
 
 **Theme name:** *ليل ولمحة — Night & Glimpse.*
