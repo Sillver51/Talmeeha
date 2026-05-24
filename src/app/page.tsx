@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import PrefsEffect from "@/components/a11y/PrefsEffect";
 import Toast from "@/components/brand/Toast";
 import GameScreen from "@/components/screens/GameScreen";
 import HomeScreen from "@/components/screens/HomeScreen";
@@ -27,6 +28,7 @@ export default function Home() {
 
   return (
     <>
+      <PrefsEffect />
       {renderScreen(gs?.phase ?? null, clientScreen)}
       <Toast />
     </>
