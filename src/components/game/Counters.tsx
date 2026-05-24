@@ -1,6 +1,7 @@
 "use client";
 
 import type { PlayerView } from "@/lib/types";
+import TeamGlyph from "@/components/brand/TeamGlyph";
 
 /**
  * Counter pills (`.counters`) — ports legacy markup (~784–790) + render logic
@@ -32,10 +33,12 @@ export default function Counters({ gs }: CountersProps) {
     <div className="counters">
       <div className="counter-pill cp-red">
         <span className="dot dot-red"></span>
+        <TeamGlyph team="red" />
         <span id="rem-r">{remR}</span>
       </div>
       <div className="counter-pill cp-blue">
         <span className="dot dot-blue"></span>
+        <TeamGlyph team="blue" />
         <span id="rem-b">{remB}</span>
       </div>
       <div className="counter-pill">

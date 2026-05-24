@@ -675,3 +675,14 @@ html[data-reduced-motion="on"] *::after{
   transition: none !important;
   scroll-behavior: auto !important;
 }
+
+/* ─── TEAM GLYPH (color-independent identity) ─── */
+.team-glyph{
+  display:inline-block;
+  font-size:.9em;
+  line-height:1;
+  vertical-align:middle;
+  filter:drop-shadow(0 0 4px currentColor);
+}
+.team-glyph.tg-red{color:var(--red2);}
+.team-glyph.tg-blue{color:var(--blue2);}

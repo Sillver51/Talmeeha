@@ -2,6 +2,7 @@
 
 import type { PlayerView } from "@/lib/types";
 import { hGuesser, hLeader, type Role } from "@/lib/ui/roles";
+import TeamGlyph from "@/components/brand/TeamGlyph";
 
 /**
  * Game header (`.g-header`) — ports legacy markup (~759–771) + the score/wins/
@@ -80,7 +81,7 @@ export default function GameHeader({
           {gs.sRed ?? 9}
         </div>
         <div className="score-label" id="hdr-red-name">
-          {gs.teamNames.red}
+          <TeamGlyph team="red" /> {gs.teamNames.red}
         </div>
         <div className="wins-badge wins-badge-red" id="wins-red-badge">
           {winsRed} انتصار
@@ -94,7 +95,7 @@ export default function GameHeader({
           {gs.sBlue ?? 8}
         </div>
         <div className="score-label" id="hdr-blue-name">
-          {gs.teamNames.blue}
+          <TeamGlyph team="blue" /> {gs.teamNames.blue}
         </div>
         <div className="wins-badge wins-badge-blue" id="wins-blue-badge">
           {winsBlue} انتصار
