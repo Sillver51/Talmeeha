@@ -2,6 +2,7 @@
 
 import type { PlayerView, Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
+import Confetti from "@/components/game/Confetti";
 
 /**
  * Win modal (`#win-modal`) — ports legacy markup (~817–828) + `showWin`/
@@ -55,6 +56,7 @@ export default function WinModal({ gs }: WinModalProps) {
 
   return (
     <div className="modal-wrap" id="win-modal">
+      <Confetti />
       <div className="modal">
         <div className="modal-trophy" id="win-trophy">
           🏆
