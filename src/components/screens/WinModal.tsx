@@ -2,6 +2,8 @@
 
 import type { PlayerView, Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
+import { usePrefsStore } from "@/store/prefsStore";
+import { formatNumber } from "@/lib/i18n/digits";
 import Confetti from "@/components/game/Confetti";
 
 /**
@@ -22,6 +24,7 @@ interface ScoreboardCardProps {
 }
 
 function ScoreboardCard({ team, name, wins, isWinner }: ScoreboardCardProps) {
+  const digits = usePrefsStore((s) => s.digits);
   return (
     <div className={isWinner ? "wsb-card wsb-winner" : "wsb-card"}>
       <div
@@ -31,7 +34,7 @@ function ScoreboardCard({ team, name, wins, isWinner }: ScoreboardCardProps) {
         {name}
       </div>
       <div className={isWinner ? "wsb-wins" : "wsb-wins wsb-wins-other"}>
-        {wins}
+        {formatNumber(wins, digits)}
       </div>
       <div className="wsb-label">انتصار</div>
     </div>

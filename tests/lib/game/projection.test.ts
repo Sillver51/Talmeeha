@@ -77,4 +77,32 @@ describe("projectStateFor", () => {
     projectStateFor(room, "G_RED");
     expect(JSON.stringify(room)).toBe(snapshot);
   });
+  it("hides the full key from a null (spectator/unjoined) viewer", () => {
+    const view = projectStateFor(gs(), null);
+    const unrevealed = view.board.filter((c) => !c.rv);
+    expect(unrevealed.every((c) => c.t === "hidden")).toBe(true);
+  });
+  it("hides the key when host mode is on but hostSocketId is unset", () => {
+    const room = gs({ hostMode: true, hostSocketId: undefined });
+    const view = projectStateFor(room, "L_RED");
+    expect(view.board.filter((c) => !c.rv).every((c) => c.t === "hidden")).toBe(true);
+  });
+  it("counts only unrevealed cards, never the assassin", () => {
+    const allRevealed = board().map((c) => ({ ...c, rv: true }));
+    expect(projectStateFor(gs({ board: allRevealed }), "G_RED").counts).toEqual({
+      red: 0,
+      blue: 0,
+      neutral: 0,
+    });
+    // the assassin is never tallied into any colour's remaining count
+    expect(projectStateFor(gs(), "L_RED").counts).toEqual({ red: 1, blue: 1, neutral: 1 });
+  });
+});
+
+describe("viewerCanSeeKey (edge cases)", () => {
+  it("host mode with an unset hostSocketId denies everyone", () => {
+    const room = gs({ hostMode: true, hostSocketId: undefined });
+    expect(viewerCanSeeKey(room, "L_RED")).toBe(false);
+    expect(viewerCanSeeKey(room, "anyone")).toBe(false);
+  });
 });

@@ -696,6 +696,7 @@ html[data-reduced-motion="on"] *::after{
 }
 .settings-sheet{
   width:100%;max-width:520px;
+  max-height:85vh;overflow-y:auto;
   background:var(--surface);
   border:1px solid var(--glass-brd);
   border-radius:var(--r-lg) var(--r-lg) 0 0;
@@ -717,9 +718,13 @@ html[data-reduced-motion="on"] *::after{
   font-family:inherit;
 }
 .toggle.on{background:var(--grad-signature);color:#0A0A0F;border-color:transparent;}
+.toggle:focus-visible,.settings-gear:focus-visible{
+  outline:none;border-color:var(--grape);
+  box-shadow:0 0 0 3px var(--grape-dim);
+}
 .settings-gear{
   position:fixed;top:.7rem;inset-inline-start:.7rem;z-index:40;
-  width:40px;height:40px;border-radius:50%;
+  width:44px;height:44px;border-radius:50%;
   border:1px solid var(--glass-brd);background:var(--glass);
   color:var(--text);font-size:1.1rem;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
@@ -738,3 +743,14 @@ html[data-reduced-motion="on"] *::after{
 @keyframes confettiFall{ to{ transform:translateY(115vh) rotate(540deg); opacity:.2; } }
 @media (prefers-reduced-motion: reduce){ .confetti{display:none;} }
 html[data-reduced-motion="on"] .confetti{display:none;}
+
+/* Honour the OS reduced-motion preference for in-game motion (the in-app
+   "system" default does not set data-reduced-motion="on"). */
+@media (prefers-reduced-motion: reduce){
+  .wc.rv,
+  .clue-word-big,
+  .btn-gold,
+  .current-player-badge{
+    animation:none !important;
+  }
+}
