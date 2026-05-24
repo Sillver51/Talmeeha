@@ -686,3 +686,41 @@ html[data-reduced-motion="on"] *::after{
 }
 .team-glyph.tg-red{color:var(--red2);}
 .team-glyph.tg-blue{color:var(--blue2);}
+
+/* ─── SETTINGS SHEET ─── */
+.settings-wrap{
+  position:fixed;inset:0;z-index:60;
+  background:rgba(5,4,12,.62);
+  backdrop-filter:blur(4px);
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.settings-sheet{
+  width:100%;max-width:520px;
+  background:var(--surface);
+  border:1px solid var(--glass-brd);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+  padding:1rem 1.1rem 1.4rem;
+  box-shadow:var(--shadow);
+}
+.settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;}
+.settings-title{font-weight:900;font-size:1.05rem;}
+.settings-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.62rem 0;border-top:1px solid var(--border);
+  font-weight:700;font-size:.92rem;
+}
+.toggle{
+  border:1px solid var(--glass-brd);
+  background:var(--glass);color:var(--text2);
+  border-radius:999px;padding:.32rem .8rem;
+  font-weight:800;font-size:.8rem;cursor:pointer;
+  font-family:inherit;
+}
+.toggle.on{background:var(--grad-signature);color:#0A0A0F;border-color:transparent;}
+.settings-gear{
+  position:fixed;top:.7rem;inset-inline-start:.7rem;z-index:40;
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--glass-brd);background:var(--glass);
+  color:var(--text);font-size:1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}

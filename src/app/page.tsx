@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PrefsEffect from "@/components/a11y/PrefsEffect";
+import SettingsSheet from "@/components/a11y/SettingsSheet";
 import Toast from "@/components/brand/Toast";
 import GameScreen from "@/components/screens/GameScreen";
 import HomeScreen from "@/components/screens/HomeScreen";
@@ -21,6 +22,7 @@ export default function Home() {
   const connect = useGameStore((s) => s.connect);
   const gs = useGameStore((s) => s.gs);
   const clientScreen = useGameStore((s) => s.clientScreen);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     connect();
@@ -29,7 +31,15 @@ export default function Home() {
   return (
     <>
       <PrefsEffect />
+      <button
+        className="settings-gear"
+        aria-label="الإعدادات"
+        onClick={() => setSettingsOpen(true)}
+      >
+        ⚙
+      </button>
       {renderScreen(gs?.phase ?? null, clientScreen)}
+      <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <Toast />
     </>
   );
