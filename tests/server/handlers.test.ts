@@ -4,7 +4,6 @@ import { Server } from "socket.io";
 import { io as Client, type Socket } from "socket.io-client";
 import type {
   ClientToServerEvents,
-  GameState,
   PlayerView,
   ServerToClientEvents,
   Team,
@@ -153,5 +152,30 @@ describe("play flow", () => {
     expect(ended.winner).toBe(other);
 
     [host, guest, redMember, blueMember].forEach((sock) => sock.close());
+  });
+});
+
+describe("role-filtered state (security regression)", () => {
+  it("never sends an unrevealed card's real type to a guesser", async () => {
+    const { code, state, host, guest, redMember, blueMember } = await startOnlineGame();
+    // redMember is a guesser (red team, not leader). Force a fresh broadcast it will
+    // receive by having the on-turn leader submit a clue (avoids racing the initial
+    // playing broadcast already consumed inside startOnlineGame).
+    const leader = state.turn === "red" ? host : guest;
+    leader.emit("submit_clue", { code, word: "تلميحة", num: 1 });
+    const view = await waitForState(redMember, (st) => st.gphase && st.board.length === 25);
+    const leaked = view.board.filter((c) => !c.rv && c.t !== "hidden");
+    expect(leaked).toHaveLength(0);
+    // Counts are still public so the UI can render remaining tallies.
+    expect(view.counts.red + view.counts.blue + view.counts.neutral).toBeGreaterThan(0);
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
+  });
+
+  it("sends the full key (no hidden cards) to a leader", async () => {
+    // `state` is the host's (red leader's) projected playing view from startOnlineGame.
+    const { state, host, guest, redMember, blueMember } = await startOnlineGame();
+    expect(state.board.some((c) => c.t === "hidden")).toBe(false);
+    expect(state.board.some((c) => c.t === "assassin")).toBe(true);
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
   });
 });
