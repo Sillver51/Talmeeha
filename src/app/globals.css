@@ -949,6 +949,22 @@ html[data-reduced-motion="on"]{ --motion-scale: 0; }
   100%{ filter: none; }
 }
 
+/* ─── WIN TITLE ENTRANCE ───
+   The "فاز …!" title makes a tasteful spring entrance on the win modal:
+   scale-up + fade with the spring ease for a slight overshoot. Duration is
+   scaled by --motion-scale so reduced-motion (0) collapses it to instant
+   (no scale, no fade). transform-origin centred for a symmetric pop. */
+@keyframes winTitleIn{
+  0%{   opacity:0; transform: scale(calc(1 - .28 * var(--motion-scale))); }
+  100%{ opacity:1; transform: none; }
+}
+#win-title{
+  animation: winTitleIn calc(var(--dur-slow) * var(--motion-scale)) var(--ease-spring) both;
+  transform-origin:center;
+}
+@media (prefers-reduced-motion: reduce){ #win-title{ animation:none; } }
+html[data-reduced-motion="on"] #win-title{ animation:none; }
+
 /* ─── WIN CONFETTI ─── */
 .confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:5;}
 .confetti-piece{
