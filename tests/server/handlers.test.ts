@@ -29,9 +29,6 @@ function connect(): Socket {
   return Client(url, { transports: ["websocket"], forceNew: true });
 }
 
-const next = (s: Socket, ev: string): Promise<PlayerView> =>
-  new Promise((res) => s.once(ev, res));
-
 const nextJoined = (s: Socket): Promise<{ code: string; myId: string; isHost: boolean }> =>
   new Promise((res) => s.once("joined", res));
 
