@@ -4,6 +4,7 @@ import type { PlayerView, Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatNumber } from "@/lib/i18n/digits";
+import { useCountUp } from "@/lib/ui/useCountUp";
 import { shareResult } from "@/lib/share/renderShareCard";
 import Confetti from "@/components/game/Confetti";
 
@@ -26,6 +27,10 @@ interface ScoreboardCardProps {
 
 function ScoreboardCard({ team, name, wins, isWinner }: ScoreboardCardProps) {
   const digits = usePrefsStore((s) => s.digits);
+  // The winner's tally counts up on mount so the new win feels earned; the
+  // loser's number is static. The hook jumps instantly under reduced motion.
+  const winnerCount = useCountUp(wins);
+  const displayed = isWinner ? winnerCount : wins;
   return (
     <div className={isWinner ? "wsb-card wsb-winner" : "wsb-card"}>
       <div
@@ -35,7 +40,7 @@ function ScoreboardCard({ team, name, wins, isWinner }: ScoreboardCardProps) {
         {name}
       </div>
       <div className={isWinner ? "wsb-wins" : "wsb-wins wsb-wins-other"}>
-        {formatNumber(wins, digits)}
+        {formatNumber(displayed, digits)}
       </div>
       <div className="wsb-label">انتصار</div>
     </div>
