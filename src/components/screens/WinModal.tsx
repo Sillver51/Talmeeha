@@ -4,6 +4,7 @@ import type { PlayerView, Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatNumber } from "@/lib/i18n/digits";
+import { shareResult } from "@/lib/share/renderShareCard";
 import Confetti from "@/components/game/Confetti";
 
 /**
@@ -46,6 +47,15 @@ export default function WinModal({ gs }: WinModalProps) {
   const restart = useGameStore((s) => s.restart);
   const goHome = useGameStore((s) => s.goHome);
   const resetWins = useGameStore((s) => s.resetWins);
+  const toast = useGameStore((s) => s.toast);
+
+  const onShare = async () => {
+    try {
+      await shareResult(gs);
+    } catch {
+      toast("تعذّرت مشاركة النتيجة");
+    }
+  };
 
   const winner: Team = gs.winner ?? "red";
   const tn = gs.teamNames;
@@ -101,6 +111,13 @@ export default function WinModal({ gs }: WinModalProps) {
         >
           تصفير السكور ↺
         </span>
+        <button
+          className="btn btn-outline w100"
+          style={{ marginBottom: ".55rem" }}
+          onClick={onShare}
+        >
+          📤 شارك النتيجة
+        </button>
         <button
           className="btn btn-gold w100"
           style={{ marginBottom: ".55rem" }}
