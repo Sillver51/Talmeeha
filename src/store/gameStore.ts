@@ -10,6 +10,14 @@ import type { TimerPreset } from "@/lib/game";
 
 type Mode = "host" | "online";
 /**
+ * Socket connection lifecycle, driven by socket.io events:
+ *  - `connecting`    initial dial before the first `connect`
+ *  - `online`        socket is connected
+ *  - `reconnecting`  unexpected drop / reconnect attempt in flight
+ *  - `offline`       intentional close or reconnection gave up
+ */
+export type ConnectionStatus = "connecting" | "online" | "reconnecting" | "offline";
+/**
  * Pre-connection client screen for host mode (mirrors legacy `show()`):
  * `"home"` before setup, `"setup"` after `startHostSetup()`. Once a `gs` exists
  * the rendered screen is derived from `gs.phase`, so this only disambiguates the
@@ -46,6 +54,9 @@ interface GameStore {
   isHost: boolean;
   gs: PlayerView | null;
   pendingJoinCode: string | null;
+  // connection
+  connectionStatus: ConnectionStatus;
+  roomLost: boolean;
   // local UI
   mode: Mode;
   clientScreen: ClientScreen;
@@ -147,6 +158,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isHost: false,
   gs: null,
   pendingJoinCode: null,
+  connectionStatus: "connecting",
+  roomLost: false,
   mode: "host",
   clientScreen: "home",
   doubtMode: false,
@@ -160,20 +173,42 @@ export const useGameStore = create<GameStore>((set, get) => ({
   connect() {
     if (get().socket) return;
     const socket: GameSocket = io();
+    // Tracks whether the last `connect` fired a `rejoin`. A subsequent server
+    // `error` then means the seat is gone (room closed / server restarted),
+    // which we surface as room-lost recovery rather than a transient toast.
+    let attemptedRejoin = false;
 
     // On every (re)connect: if we already hold a room seat, ask the server to restore it.
     // First connect is a no-op (roomCode/myId are null). After a network drop, the store
     // still holds the prior code + playerId, so the server remaps us to the new socket id.
     socket.on("connect", () => {
+      set({ connectionStatus: "online" });
       const { roomCode, myId, myName } = get();
       // Require a non-empty name too: the server's rejoinSchema rejects a blank name,
       // so emitting without one would only burn the seat's grace window for nothing.
       if (roomCode && myId && myName) {
+        attemptedRejoin = true;
         socket.emit("rejoin", { code: roomCode, playerId: myId, name: myName });
       }
     });
 
+    socket.on("disconnect", (reason) => {
+      // "io client disconnect" = we closed it intentionally; anything else = unexpected drop.
+      set({
+        connectionStatus: reason === "io client disconnect" ? "offline" : "reconnecting",
+      });
+    });
+    // Reconnection lifecycle lives on the manager (socket.io), not the socket.
+    socket.io.on("reconnect_attempt", () => set({ connectionStatus: "reconnecting" }));
+    socket.io.on("reconnect_failed", () => set({ connectionStatus: "offline" }));
+    socket.on("connect_error", () => {
+      set((s) => ({
+        connectionStatus: s.connectionStatus === "online" ? "reconnecting" : s.connectionStatus,
+      }));
+    });
+
     socket.on("joined", ({ code, myId, isHost }) => {
+      attemptedRejoin = false; // a successful (re)join clears the pending flag
       set({ myId, roomCode: code, isHost });
     });
 
@@ -199,10 +234,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
 
     socket.on("error", (msg) => {
+      if (attemptedRejoin) {
+        // A rejoin after reconnect failed → the room is gone (server restart / closed).
+        attemptedRejoin = false;
+        set({ roomLost: true });
+        return;
+      }
       get().toast(msg);
     });
 
-    set({ socket, winsData: loadWins(), myName: loadName() });
+    set({
+      socket,
+      connectionStatus: "connecting",
+      winsData: loadWins(),
+      myName: loadName(),
+    });
   },
 
   selectMode(m) {
@@ -404,6 +450,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       gs: null,
       isHost: false,
       doubtMode: false,
+      roomLost: false,
       clientScreen: "home",
     });
   },

@@ -82,6 +82,7 @@ function TeamCard({ team, gs }: TeamCardProps) {
         {ids.map((id) => {
           const player = gs.players[id];
           const isLeader = gs.leaders[team] === id;
+          const isDisconnected = Boolean(player?.disconnected);
           return (
             <li
               key={id}
@@ -93,6 +94,7 @@ function TeamCard({ team, gs }: TeamCardProps) {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: ".24rem",
+                opacity: isDisconnected ? 0.5 : 1,
               }}
             >
               {player?.name ?? "?"}
@@ -109,6 +111,9 @@ function TeamCard({ team, gs }: TeamCardProps) {
                 >
                   قائد
                 </span>
+              )}
+              {isDisconnected && (
+                <span className="disc-badge"><span aria-hidden="true">انقطع</span><span className="sr-only"> — انقطع الاتصال</span></span>
               )}
             </li>
           );

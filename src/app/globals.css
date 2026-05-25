@@ -1177,3 +1177,40 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   animation:ttPulse calc(var(--dur-base) * var(--motion-scale)) var(--ease-spring) infinite;
 }
 
+/* ===== Connection lifecycle ===== */
+/* Fixed full-width strip at the top reflecting socket connection state. */
+.conn-banner{
+  position:fixed;
+  inset-block-start:0;
+  inset-inline:0;
+  z-index:1001;
+  text-align:center;
+  font-size:.78rem;
+  font-weight:800;
+  padding:.4rem .8rem;
+  color:var(--text);
+  direction:rtl;
+  backdrop-filter:blur(8px);
+  border-block-end:1px solid var(--border2);
+}
+.conn-warn{
+  background:var(--gold-dim);
+  border-block-end-color:rgba(232,160,32,.28);
+  color:var(--gold2);
+}
+.conn-error{
+  background:var(--red-bg);
+  border-block-end-color:var(--red);
+  color:var(--red2);
+}
+/* Tiny muted pill marking a player whose socket dropped (within grace window). */
+.disc-badge{
+  background:var(--surface3);
+  color:var(--text);
+  font-size:.52rem;
+  font-weight:900;
+  padding:.07rem .28rem;
+  border-radius:4px;
+  border:1px solid var(--border2);
+}
+
