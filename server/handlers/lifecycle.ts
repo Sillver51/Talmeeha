@@ -2,6 +2,7 @@ import type { Server, Socket } from "socket.io";
 import type { ClientToServerEvents, GameState, ServerToClientEvents, Team } from "@/lib/types";
 import { store } from "../rooms";
 import { broadcastState } from "../emit";
+import { scheduleRemoval } from "../presence";
 import { startGameSchema, restartSchema } from "@/lib/schemas";
 import { buildBoard, remaining } from "@/lib/game";
 import { WORDS } from "@/lib/words";
@@ -82,7 +83,7 @@ export function registerLifecycleHandlers(
   // ── DISCONNECT ──
   socket.on("disconnect", () => {
     for (const [code, room] of [...store.all()]) {
-      // Host-mode room is torn down when its host leaves (legacy server.js:304-306).
+      // Host-mode room is torn down when its host leaves (legacy parity).
       if (room.hostMode && room.hostSocketId === socket.id) {
         store.delete(code);
         continue;
@@ -90,26 +91,42 @@ export function registerLifecycleHandlers(
 
       if (!room.players[socket.id]) continue;
 
-      const players = { ...room.players };
-      delete players[socket.id];
-
-      const teams: Record<Team, string[]> = {
-        red: room.teams.red.filter((i) => i !== socket.id),
-        blue: room.teams.blue.filter((i) => i !== socket.id),
+      // Online: keep the seat, mark disconnected, broadcast, and remove only after the grace window.
+      const marked: GameState = {
+        ...room,
+        players: {
+          ...room.players,
+          [socket.id]: { ...room.players[socket.id]!, disconnected: true },
+        },
       };
-      const leaders: Record<Team, string | null> = {
-        red: room.leaders.red === socket.id ? null : room.leaders.red,
-        blue: room.leaders.blue === socket.id ? null : room.leaders.blue,
-      };
-
-      if (Object.keys(players).length === 0) {
-        store.delete(code);
-        continue;
-      }
-
-      const next: GameState = { ...room, players, teams, leaders };
-      store.set(code, next);
+      store.set(code, marked);
       void broadcastState(io, code);
+
+      const removedId = socket.id;
+      scheduleRemoval(code, removedId, () => {
+        const current = store.get(code);
+        if (!current || !current.players[removedId]) return;
+
+        const players = { ...current.players };
+        delete players[removedId];
+
+        const teams: Record<Team, string[]> = {
+          red: current.teams.red.filter((i) => i !== removedId),
+          blue: current.teams.blue.filter((i) => i !== removedId),
+        };
+        const leaders: Record<Team, string | null> = {
+          red: current.leaders.red === removedId ? null : current.leaders.red,
+          blue: current.leaders.blue === removedId ? null : current.leaders.blue,
+        };
+
+        if (Object.keys(players).length === 0) {
+          store.delete(code);
+          return;
+        }
+
+        store.set(code, { ...current, players, teams, leaders });
+        void broadcastState(io, code);
+      });
     }
   });
 }
