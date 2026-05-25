@@ -1,6 +1,6 @@
 import type { Server } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents } from "@/lib/types";
-import { addLog, applyTurnDeadline, nextTurn } from "@/lib/game";
+import { addLog, applyTurnDeadline, nextTurn, needsSuddenDeath, endTimedGame, SUDDEN_DEATH_AFTER_TIMEOUTS } from "@/lib/game";
 import { store } from "./rooms";
 import { broadcastState } from "./emit";
 
@@ -50,9 +50,22 @@ async function expire(io: IO, code: string): Promise<void> {
   timers.delete(code);
   const room = store.get(code);
   if (!room || room.phase !== "playing" || !room.timer?.enabled) return;
-  // Pass the turn only. nextTurn flips turn + resets clue/gleft/gphase/doubts; board untouched.
+
+  const timeouts = (room.clockTimeouts ?? 0) + 1;
+
+  // Both teams let the clock run out with words still on the board → resolve.
+  if (
+    timeouts >= SUDDEN_DEATH_AFTER_TIMEOUTS &&
+    needsSuddenDeath({ ...room, endedOnClock: true })
+  ) {
+    store.set(code, endTimedGame(room));
+    await broadcastState(io, code);
+    return; // game over — do not re-arm
+  }
+
+  // Otherwise pass the turn (NEVER reveal), carrying the incremented timeout streak.
   const passed = applyTurnDeadline(
-    nextTurn({ ...room, log: addLog(room.log, "⏰ انتهى الوقت") }),
+    nextTurn({ ...room, clockTimeouts: timeouts, log: addLog(room.log, "⏰ انتهى الوقت") }),
     Date.now(),
   );
   store.set(code, passed);
