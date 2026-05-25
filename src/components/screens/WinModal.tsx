@@ -8,6 +8,7 @@ import { useCountUp } from "@/lib/ui/useCountUp";
 import { shareResult } from "@/lib/share/renderShareCard";
 import Confetti from "@/components/game/Confetti";
 import { Button } from "@/components/ui/button";
+import { Dialog as DialogPrimitive } from "radix-ui";
 
 /**
  * Win modal (`#win-modal`) — ports legacy markup (~817–828) + `showWin`/
@@ -76,69 +77,85 @@ export default function WinModal({ gs }: WinModalProps) {
     : "كشفوا جميع كلماتهم 🎉";
 
   return (
-    <div className="modal-wrap" id="win-modal">
-      <Confetti />
-      <div className="modal">
-        <div className="modal-trophy" id="win-trophy">
-          🏆
-        </div>
-        <div
-          className={`modal-title ${winner === "red" ? "w-red" : "w-blue"}`}
-          id="win-title"
+    <DialogPrimitive.Root open>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Content
+          className="modal-wrap"
+          id="win-modal"
+          aria-labelledby="win-title"
+          aria-describedby="win-sub"
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
         >
-          فاز {winner === "red" ? tn.red : tn.blue}! 🍇
-        </div>
-        <div className="modal-sub" id="win-sub">
-          {subtitle}
-        </div>
-        <div className="win-scoreboard" id="win-scoreboard">
-          <ScoreboardCard
-            team="red"
-            name={winsData.redName || "الأحمر"}
-            wins={winsData.red || 0}
-            isWinner={winner === "red"}
-          />
-          <ScoreboardCard
-            team="blue"
-            name={winsData.blueName || "الأزرق"}
-            wins={winsData.blue || 0}
-            isWinner={winner === "blue"}
-          />
-        </div>
-        <span
-          className="wsb-reset"
-          role="button"
-          tabIndex={0}
-          onClick={resetWins}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              resetWins();
-            }
-          }}
-        >
-          تصفير النتيجة ↺
-        </span>
-        <Button
-          variant="outline"
-          className="w-full"
-          style={{ marginBottom: ".55rem" }}
-          onClick={onShare}
-        >
-          📤 شارك النتيجة
-        </Button>
-        <Button
-          variant="gold"
-          className="w-full"
-          style={{ marginBottom: ".55rem" }}
-          onClick={restart}
-        >
-          🔄 جولة جديدة
-        </Button>
-        <Button variant="outline" className="w-full" onClick={goHome}>
-          🏠 الرئيسية
-        </Button>
-      </div>
-    </div>
+          <Confetti />
+          <div className="modal">
+            <div className="modal-trophy" id="win-trophy">
+              🏆
+            </div>
+            <DialogPrimitive.Title asChild>
+              <div
+                className={`modal-title ${winner === "red" ? "w-red" : "w-blue"}`}
+                id="win-title"
+              >
+                فاز {winner === "red" ? tn.red : tn.blue}! 🍇
+              </div>
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Description asChild>
+              <div className="modal-sub" id="win-sub">
+                {subtitle}
+              </div>
+            </DialogPrimitive.Description>
+            <div className="win-scoreboard" id="win-scoreboard">
+              <ScoreboardCard
+                team="red"
+                name={winsData.redName || "الأحمر"}
+                wins={winsData.red || 0}
+                isWinner={winner === "red"}
+              />
+              <ScoreboardCard
+                team="blue"
+                name={winsData.blueName || "الأزرق"}
+                wins={winsData.blue || 0}
+                isWinner={winner === "blue"}
+              />
+            </div>
+            <span
+              className="wsb-reset"
+              role="button"
+              tabIndex={0}
+              onClick={resetWins}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  resetWins();
+                }
+              }}
+            >
+              تصفير النتيجة ↺
+            </span>
+            <Button
+              variant="outline"
+              className="w-full"
+              style={{ marginBottom: ".55rem" }}
+              onClick={onShare}
+            >
+              📤 شارك النتيجة
+            </Button>
+            <Button
+              variant="gold"
+              className="w-full"
+              style={{ marginBottom: ".55rem" }}
+              onClick={restart}
+            >
+              🔄 جولة جديدة
+            </Button>
+            <Button variant="outline" className="w-full" onClick={goHome}>
+              🏠 الرئيسية
+            </Button>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
