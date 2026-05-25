@@ -180,6 +180,10 @@ and migrated UI.
 **Token mapping (brand → shadcn).** shadcn's semantic tokens are wired to our Liquid-Night
 palette in `globals.css` (in a dedicated `:root, .dark` block + `@theme inline`), using
 **oklch**. The app is always-dark, so dark values are set on both `:root` and `.dark`.
+**Single source of truth:** there is exactly ONE shadcn token block and ONE `@theme inline`
+— the CLI's appended default neutral/gray block was removed so the system stays unified (no
+duplicate, no conflicting `--primary`/`--background`). The `@layer base` reset is scoped to
+`[data-slot]` (shadcn components) so it never fights the global vanilla `body`.
 
 | shadcn token | Mapped to | Note |
 |---|---|---|
