@@ -1103,3 +1103,77 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   animation: screenEnter calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
 }
 
+/* ===== Blitz: TurnTimer ===== */
+
+/* Visually hidden — for screen-reader-only content. */
+.sr-only{
+  position:absolute;
+  width:1px;height:1px;
+  padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);
+  white-space:nowrap;border:0;
+}
+
+/* Container: centered stack of ring + numeral. */
+.turn-timer{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  width:52px;height:52px;
+  margin:0 auto .5rem;
+  flex-shrink:0;
+}
+
+/* SVG ring — rotated so it depletes from the top (12 o'clock). */
+.turn-timer-ring{
+  position:absolute;inset:0;
+  width:52px;height:52px;
+  transform:rotate(-90deg);
+  transform-origin:50% 50%;
+}
+
+/* Track (dim background ring). */
+.ttr-track{
+  fill:none;
+  stroke:rgba(255,255,255,.12);
+  stroke-width:3;
+}
+
+/* Fill ring — value-driven via stroke-dashoffset; transition is safe under
+   reduced-motion because it reflects a real value change, not decoration. */
+.ttr-fill{
+  fill:none;
+  stroke:var(--grape2);
+  stroke-width:3;
+  stroke-linecap:round;
+  transition:stroke-dashoffset 120ms linear;
+}
+
+/* Numeral centred over the ring. */
+.tt-secs{
+  position:relative;
+  font-size:.9rem;
+  font-weight:800;
+  color:var(--text);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── Urgent state (≤ 10 s) ── */
+
+/* Switch ring stroke to gold to add a non-color urgency cue (ring + numeral + pulse). */
+.turn-timer.urgent .ttr-fill{
+  stroke:var(--gold);
+}
+.turn-timer.urgent .tt-secs{
+  color:var(--gold2);
+}
+
+/* Pulse keyframe — motion-scale gated so it stops under reduced-motion. */
+@keyframes ttPulse{
+  0%,100%{ transform:scale(1); }
+  50%    { transform:scale(calc(1 + 0.06 * var(--motion-scale))); }
+}
+.turn-timer.urgent{
+  animation:ttPulse calc(var(--dur-base) * var(--motion-scale)) var(--ease-spring) infinite;
+}
+
