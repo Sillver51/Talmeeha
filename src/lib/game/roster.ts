@@ -7,6 +7,7 @@ import type { GameState, Team } from "@/lib/types";
  */
 export function teamHasActiveGuesser(room: GameState, team: Team): boolean {
   return room.teams[team].some(
-    (id) => id !== room.leaders[team] && room.players[id]?.disconnected !== true,
+    (id) =>
+      id !== room.leaders[team] && Boolean(room.players[id]) && !room.players[id]!.disconnected,
   );
 }

@@ -86,7 +86,14 @@ export function registerTeamHandlers(
       players = { ...room.players, [socket.id]: { ...room.players[socket.id]!, team } };
     }
 
-    const leaders: Record<Team, string | null> = { ...room.leaders, [team]: socket.id };
+    // An implicit cross-team move must vacate this socket's OLD leader seat, otherwise
+    // the other team is left with a leader id pointing at a player who left that team.
+    const otherTeam: Team = team === "red" ? "blue" : "red";
+    const leaders: Record<Team, string | null> = {
+      ...room.leaders,
+      [otherTeam]: room.leaders[otherTeam] === socket.id ? null : room.leaders[otherTeam],
+      [team]: socket.id,
+    };
 
     const next: GameState = { ...room, teams, players, leaders };
     store.set(code, next);

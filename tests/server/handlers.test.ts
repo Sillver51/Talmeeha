@@ -263,6 +263,28 @@ describe("integrity guards", () => {
     [host, guest, redMember, blueMember].forEach((s) => s.close());
   });
 
+  it("select_team mid-game is phase-gated: a member's team stays unchanged", async () => {
+    const { code, host, guest, redMember, blueMember } = await startOnlineGame();
+    const before = store.get(code)!;
+    const redMemberId = redMember.id!;
+    const teamBefore = before.players[redMemberId]?.team;
+    expect(teamBefore).toBe("red");
+
+    // redMember tries to switch to blue while phase === "playing".
+    // The phase-gate returns silently before any state change, so the team is locked.
+    redMember.emit("select_team", { code, team: "blue" });
+    // Give the server time to process (and ignore) the request before asserting.
+    await new Promise<void>((res) => setTimeout(res, 100));
+
+    const after = store.get(code)!;
+    expect(after.players[redMemberId]?.team).toBe("red");
+    expect(after.teams.red).toContain(redMemberId);
+    expect(after.teams.blue).not.toContain(redMemberId);
+    expect(after.phase).toBe("playing");
+
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
+  });
+
   it("anti-steal in lobby: a second member can't take a connected leader's seat", async () => {
     const a = connect();
     a.emit("create_online", { name: "A" });
