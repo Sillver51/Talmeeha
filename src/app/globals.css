@@ -131,7 +131,7 @@ body::after{
 
 /* ─── LOGO ─── */
 .logo{
-  font-size:4.2rem;font-weight:900;letter-spacing:-2px;line-height:1;
+  font-size:clamp(2.6rem, 11vw, 4.2rem);font-weight:900;letter-spacing:-2px;line-height:1;
   background:linear-gradient(135deg,var(--grape2) 0%,var(--gold2) 50%,var(--red2) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
@@ -379,7 +379,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 }
 .clue-label-sm{font-size:.68rem;color:var(--muted);font-weight:600;white-space:nowrap;letter-spacing:.3px;}
 .clue-word-big{
-  font-size:1.5rem;font-weight:900;letter-spacing:-.5px;
+  font-size:clamp(1.25rem, 5.5vw, 1.7rem);font-weight:900;letter-spacing:-.5px;
   background:var(--grad-signature);
   background-size:200% auto;
   -webkit-background-clip:text;background-clip:text;color:transparent;
@@ -792,7 +792,7 @@ html[data-reduced-motion="on"] .confetti{display:none;}
 }
 .onboard-card .grape-emoji{font-size:4.5rem;}
 .onboard-title{
-  font-size:3rem;font-weight:900;
+  font-size:clamp(2.1rem, 9vw, 3rem);font-weight:900;
   background:var(--grad-signature);-webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .onboard-lead{color:var(--text2);font-weight:600;line-height:1.7;font-size:1rem;}
