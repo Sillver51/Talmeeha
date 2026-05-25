@@ -1,3 +1,5 @@
+import type { TimerConfig, TimerPreset } from "@/lib/game/timer";
+
 export type Team = "red" | "blue";
 export type CardType = Team | "neutral" | "assassin";
 export type Phase = "lobby" | "setup" | "playing" | "ended";
@@ -44,6 +46,9 @@ export interface GameState {
   log: string[];
   hRed?: HostTeam;
   hBlue?: HostTeam;
+  timer?: TimerConfig;
+  turnDeadlineAt?: number | null;
+  endedOnClock?: boolean;
 }
 
 export interface Joined { code: string; myId: string; isHost: boolean; }
@@ -67,6 +72,7 @@ export interface ClientToServerEvents {
   toggle_doubt: (p: { code: string; index: number }) => void;
   end_turn: (p: { code: string }) => void;
   restart: (p: { code: string }) => void;
+  set_timer: (p: { code: string; preset: TimerPreset | "off" }) => void;
 }
 
 export interface ServerToClientEvents {
