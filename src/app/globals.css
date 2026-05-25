@@ -800,3 +800,12 @@ html[data-reduced-motion="on"] .confetti{display:none;}
 .coach-step{color:var(--grape2);font-weight:900;font-size:.72rem;margin-bottom:.3rem;}
 .coach-text{color:var(--text);font-weight:700;line-height:1.7;margin-bottom:.7rem;}
 .coach-actions{display:flex;justify-content:space-between;align-items:center;gap:.5rem;}
+
+/* ─── PASS-THE-PHONE HANDOFF ─── */
+.handoff{
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  background:var(--glass);border:1px solid var(--glass-brd);
+  border-radius:var(--r);padding:.6rem;margin-bottom:.4rem;
+}
+.handoff-label{font-weight:800;font-size:.85rem;color:var(--text2);}
+.btn.peeking{box-shadow:0 0 0 2px var(--gold2), 0 0 18px rgba(232,160,32,.4);}

@@ -8,6 +8,7 @@ import GameHeader from "@/components/game/GameHeader";
 import GameLog from "@/components/game/GameLog";
 import HostBar from "@/components/game/HostBar";
 import LeaderPanel from "@/components/game/LeaderPanel";
+import HandoffGate from "@/components/game/HandoffGate";
 import CoachMarks from "@/components/onboarding/CoachMarks";
 import { hGuesser, hLeader, myRole, myTurn } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
@@ -56,6 +57,7 @@ export default function GameScreen() {
       />
 
       {isHost && <HostBar gphase={gs.gphase} />}
+      {isHost && !gs.gphase && playing && <HandoffGate gs={gs} />}
 
       {showCpb && (
         <div

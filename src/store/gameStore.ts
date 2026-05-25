@@ -50,6 +50,7 @@ interface GameStore {
   clientScreen: ClientScreen;
   doubtMode: boolean;
   hostViewLeader: boolean;
+  peeking: boolean;
   toastMsg: string | null;
   winsData: WinsData;
   hSetup: { red: HostTeamSetup; blue: HostTeamSetup };
@@ -76,6 +77,7 @@ interface GameStore {
   goHome(): void;
   toggleDoubtMode(): void;
   toggleHostView(): void;
+  setPeeking(on: boolean): void;
   toast(msg: string): void;
   resetWins(): void;
 }
@@ -147,6 +149,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   clientScreen: "home",
   doubtMode: false,
   hostViewLeader: false,
+  peeking: false,
   toastMsg: null,
   winsData: DEFAULT_WINS,
   hSetup: emptyHostSetup(),
@@ -401,6 +404,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   toggleHostView() {
     set((s) => ({ hostViewLeader: !s.hostViewLeader }));
+  },
+
+  setPeeking(on) {
+    set({ peeking: on });
   },
 
   toast(msg) {

@@ -19,9 +19,13 @@ interface BoardProps {
 
 export default function Board({ gs, role, myId, myTeam, isMyTurn }: BoardProps) {
   const hostViewLeader = useGameStore((s) => s.hostViewLeader);
+  const peeking = useGameStore((s) => s.peeking);
   const doubtMode = useGameStore((s) => s.doubtMode);
   const guessCard = useGameStore((s) => s.guessCard);
   const toggleDoubt = useGameStore((s) => s.toggleDoubt);
+
+  // Host hold-to-peek reveals the key only while the press is active (no persistent secret).
+  const effectiveHostView = hostViewLeader || peeking;
 
   return (
     <div className="board" id="board">
@@ -36,7 +40,7 @@ export default function Board({ gs, role, myId, myTeam, isMyTurn }: BoardProps) 
           isMyTurn={isMyTurn}
           gphase={gs.gphase}
           phase={gs.phase}
-          hostViewLeader={hostViewLeader}
+          hostViewLeader={effectiveHostView}
           doubtMode={doubtMode}
           doubts={gs.doubts?.[i]}
           onGuess={guessCard}
