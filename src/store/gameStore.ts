@@ -477,6 +477,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const next: WinsData = { ...get().winsData, red: 0, blue: 0 };
     saveWins(next);
     set({ winsData: next });
-    get().toast("تم تصفير السكور 🍇");
+    get().toast("تم تصفير النتيجة 🍇");
   },
 }));

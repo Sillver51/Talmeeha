@@ -42,7 +42,9 @@ function ScoreboardCard({ team, name, wins, isWinner }: ScoreboardCardProps) {
       <div className={isWinner ? "wsb-wins" : "wsb-wins wsb-wins-other"}>
         {formatNumber(displayed, digits)}
       </div>
-      <div className="wsb-label">انتصار</div>
+      <div className="wsb-label">
+        {displayed === 1 ? "انتصار واحد" : displayed === 2 ? "انتصاران" : "انتصارات"}
+      </div>
     </div>
   );
 }
@@ -114,7 +116,7 @@ export default function WinModal({ gs }: WinModalProps) {
             }
           }}
         >
-          تصفير السكور ↺
+          تصفير النتيجة ↺
         </span>
         <button
           className="btn btn-outline w100"

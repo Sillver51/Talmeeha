@@ -23,7 +23,7 @@ export default function ActionRow() {
         id="doubt-btn"
         onClick={toggleDoubtMode}
       >
-        {doubtMode ? "✅ وضع الشك — انقر للتعليم" : "🤔 علامة شك"}
+        {doubtMode ? "✅ وضع الشك — انقر على كلمة للتشكيك" : "🤔 علامة شك"}
       </button>
     </div>
   );

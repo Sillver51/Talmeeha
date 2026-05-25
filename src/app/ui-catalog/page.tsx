@@ -79,7 +79,7 @@ export default function UiCatalogPage() {
       <Section title="البطاقة">
         <Card className="w-full max-w-sm">
           <CardHeader>
-            <CardTitle>القائد (القائد)</CardTitle>
+            <CardTitle>بطاقة القائد</CardTitle>
             <CardDescription>
               يعطي تلميحة من كلمة واحدة ورقماً لفريقه.
             </CardDescription>
