@@ -10,6 +10,8 @@ import GameScreen from "@/components/screens/GameScreen";
 import HomeScreen from "@/components/screens/HomeScreen";
 import LobbyScreen from "@/components/screens/LobbyScreen";
 import SetupScreen from "@/components/screens/SetupScreen";
+import ConnectionBanner from "@/components/system/ConnectionBanner";
+import RoomLostModal from "@/components/system/RoomLostModal";
 import type { Phase } from "@/lib/types";
 import { screenKey } from "@/lib/ui/screenKey";
 import { useGameStore } from "@/store/gameStore";
@@ -55,6 +57,8 @@ export default function Home() {
         {renderScreen(gs?.phase ?? null, clientScreen)}
       </div>
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <ConnectionBanner />
+      <RoomLostModal />
       <Toast />
     </>
   );
