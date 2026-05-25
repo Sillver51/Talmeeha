@@ -58,6 +58,14 @@
   --glass:     rgba(255,255,255,.045);
   --glass-brd: rgba(255,255,255,.10);
   --grad-signature: linear-gradient(90deg, var(--grape) 0%, var(--gold) 50%, var(--cyan) 100%);
+
+  /* Motion tokens (Liquid Night) */
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ease-out:    cubic-bezier(.22,1,.36,1);
+  --dur-fast:    140ms;
+  --dur-base:    240ms;
+  --dur-slow:    420ms;
+  --motion-scale: 1;            /* reduced-motion sets this to 0 */
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -683,6 +691,10 @@ html[data-reduced-motion="on"] *::after{
   animation: none !important;
   transition: none !important;
   scroll-behavior: auto !important;
+}
+html[data-reduced-motion="on"]{ --motion-scale: 0; }
+@media (prefers-reduced-motion: reduce){
+  html:not([data-reduced-motion="off"]){ --motion-scale: 0; }
 }
 
 /* ─── TEAM GLYPH (color-independent identity) ─── */
