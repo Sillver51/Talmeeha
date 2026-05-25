@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePrefsStore } from "@/store/prefsStore";
+import InstallButton from "@/components/pwa/InstallButton";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -97,6 +98,11 @@ export default function SettingsSheet({ open, onClose }: SettingsSheetProps) {
           >
             {sound ? "مُفعّل" : "مُعطّل"}
           </button>
+        </div>
+
+        <div className="settings-row">
+          <span>تثبيت التطبيق</span>
+          <InstallButton />
         </div>
       </div>
     </div>
