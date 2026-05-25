@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import PrefsEffect from "@/components/a11y/PrefsEffect";
 import SettingsSheet from "@/components/a11y/SettingsSheet";
 import Onboarding from "@/components/onboarding/Onboarding";
+import PwaRegister from "@/components/pwa/PwaRegister";
 import Toast from "@/components/brand/Toast";
 import GameScreen from "@/components/screens/GameScreen";
 import HomeScreen from "@/components/screens/HomeScreen";
@@ -40,6 +41,7 @@ export default function Home() {
   return (
     <>
       <PrefsEffect />
+      <PwaRegister />
       <Onboarding />
       <button
         className="settings-gear"
