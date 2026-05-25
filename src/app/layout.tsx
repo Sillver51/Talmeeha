@@ -11,11 +11,32 @@ const tajawal = Tajawal({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+const description =
+  "تلميحة — لعبة عربية جماعية لتخمين الكلمات في الوقت الفعلي. فريقان، لكل فريق قائد يعطي تلميحة من كلمة واحدة، والباقي يخمّنون الكلمات على اللوحة. تجنّبوا القاتل!";
+
 export const metadata: Metadata = {
-  title: "تلميحة 🍇",
-  description: "لعبة الفرق والكلمات",
+  metadataBase: new URL(siteUrl),
+  title: { default: "تلميحة 🍇", template: "%s · تلميحة" },
+  description,
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "تلميحة", statusBarStyle: "black-translucent" },
+  openGraph: {
+    title: "تلميحة 🍇",
+    description,
+    siteName: "تلميحة",
+    locale: "ar_AR",
+    type: "website",
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "تلميحة 🍇",
+    description,
+  },
+  robots: { index: true, follow: true },
+  alternates: { canonical: "/", languages: { ar: "/" } },
 };
 
 export const viewport: Viewport = {
