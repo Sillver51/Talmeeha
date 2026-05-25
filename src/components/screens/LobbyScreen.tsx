@@ -1,7 +1,12 @@
 "use client";
 
+import type { KeyboardEvent } from "react";
 import type { PlayerView, Team } from "@/lib/types";
 import type { TimerPreset } from "@/lib/game";
+
+const onKey = (e: KeyboardEvent, fn: () => void) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
+};
 import { PRESETS } from "@/lib/game";
 import { useGameStore } from "@/store/gameStore";
 import RoomShare from "@/components/share/RoomShare";
@@ -50,6 +55,8 @@ function TeamCard({ team, gs }: TeamCardProps) {
   const style = TEAM_STYLE[team];
   const isRed = team === "red";
 
+  const teamName = gs.teamNames[team];
+
   return (
     <div
       style={{
@@ -60,7 +67,11 @@ function TeamCard({ team, gs }: TeamCardProps) {
         textAlign: "center",
         cursor: "pointer",
       }}
+      role="button"
+      tabIndex={0}
+      aria-label={`الانضمام إلى ${teamName}`}
       onClick={() => joinTeam(team)}
+      onKeyDown={(e) => onKey(e, () => joinTeam(team))}
     >
       <div style={{ fontSize: "1.4rem", marginBottom: ".2rem" }}>
         {isRed ? "🔴" : "🔵"}

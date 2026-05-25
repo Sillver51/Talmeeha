@@ -159,7 +159,7 @@ export default function SetupScreen() {
             يحتاج كل فريق لاعبَين على الأقل + قائد واحد
           </div>
           <button className="btn btn-outline mt" onClick={goHome}>
-            ← رجوع
+            <bdi>←</bdi> رجوع
           </button>
         </div>
       </div>

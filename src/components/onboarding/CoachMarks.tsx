@@ -67,7 +67,7 @@ export default function CoachMarks() {
             className="btn btn-gold btn-sm"
             onClick={() => (isLast ? finish() : setStep((s) => s + 1))}
           >
-            {isLast ? "فهمت 🍇" : "التالي ←"}
+            {isLast ? "فهمت 🍇" : <>التالي <bdi>←</bdi></>}
           </button>
         </div>
       </div>

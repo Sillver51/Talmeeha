@@ -288,7 +288,7 @@ input[type=text],input[type=number]{
   border-radius:var(--r-sm);
   color:var(--text);
   font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:600;
-  direction:rtl;text-align:right;
+  text-align:start;
   outline:none;
   transition:border-color .2s,box-shadow .2s;
   margin-bottom:.65rem;
@@ -377,7 +377,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   border:1px solid var(--border2);
   border-radius:var(--r-sm);
   color:var(--text);font-family:'Tajawal',sans-serif;font-size:.93rem;font-weight:800;
-  direction:rtl;text-align:right;outline:none;margin-bottom:0;min-width:0;
+  text-align:start;outline:none;margin-bottom:0;min-width:0;
 }
 .team-name-inp:focus{border-color:var(--gold);}
 .add-player-row{display:flex;gap:.45rem;margin-bottom:.65rem;}
@@ -477,7 +477,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 .counter-pill.cp-red{border-color:rgba(240,64,96,.28);color:var(--red2);}
 .counter-pill.cp-blue{border-color:rgba(45,110,255,.28);color:var(--blue2);}
 .turn-chip{
-  margin-right:auto;
+  margin-inline-end:auto;
   background:rgba(26,26,46,0.8);
   border:1px solid var(--border2);
   border-radius:20px;padding:.18rem .6rem;
@@ -527,7 +527,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   border:1px solid rgba(139,92,246,.3);
   border-radius:20px;padding:.15rem .55rem;
   color:var(--grape2);
-  margin-right:auto;
+  margin-inline-end:auto;
 }
 
 /* ─── LEADER PANEL ─── */
@@ -1198,5 +1198,27 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   padding:.07rem .28rem;
   border-radius:4px;
   border:1px solid var(--border2);
+}
+
+/* ===== a11y: focus-visible ===== */
+.btn:focus-visible{
+  outline:none;
+  border-color:var(--grape);
+  box-shadow:0 0 0 3px var(--grape-dim);
+}
+.mode-card:focus-visible{
+  outline:none;
+  border-color:var(--grape);
+  box-shadow:0 0 0 3px var(--grape-dim);
+}
+.wc:focus-visible{
+  outline:none;
+  border-color:var(--grape);
+  box-shadow:0 0 0 3px var(--grape-dim);
+}
+.room-code-display:focus-visible{
+  outline:none;
+  border-color:var(--grape);
+  box-shadow:0 0 0 3px var(--grape-dim);
 }
 
