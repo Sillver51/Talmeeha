@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { GameState } from "@/lib/types";
+import type { PlayerView } from "@/lib/types";
 import { hLeader } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
 
@@ -13,7 +13,7 @@ import { useGameStore } from "@/store/gameStore";
  * clearing of `#ci-word`/`#ci-num`).
  */
 interface LeaderPanelProps {
-  gs: GameState;
+  gs: PlayerView;
   isHost: boolean;
 }
 

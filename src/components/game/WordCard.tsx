@@ -1,7 +1,7 @@
 "use client";
 
 import type { MouseEvent } from "react";
-import type { Card, GameState, Team } from "@/lib/types";
+import type { PlayerView, Team, ViewCard } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
 
 /**
@@ -18,14 +18,14 @@ import type { Role } from "@/lib/ui/roles";
  *    when `doubtMode`. Non-actionable otherwise.
  */
 interface WordCardProps {
-  card: Card;
+  card: ViewCard;
   index: number;
   role: Role;
   myId: string | null;
   myTeam: Team | null;
   isMyTurn: boolean;
   gphase: boolean;
-  phase: GameState["phase"];
+  phase: PlayerView["phase"];
   hostViewLeader: boolean;
   doubtMode: boolean;
   doubts: string[] | undefined;
@@ -61,10 +61,11 @@ export default function WordCard({
 
   let className = "wc";
   if (isHost) {
-    if (hostViewLeader || !gphase) className += ` hv-${card.t}`;
+    // Host (pass-and-play) receives the full key; client gates display via host-view / pre-guess.
+    if ((hostViewLeader || !gphase) && card.t !== "hidden") className += ` hv-${card.t}`;
   } else if (isLeader) {
-    if (card.t === myTeam) className += ` h-${myTeam}`;
-    else if (card.t === "assassin") className += " h-assassin";
+    // Online leader sees the full key: tint EVERY unrevealed card by its true type.
+    if (card.t !== "hidden") className += ` h-${card.t}`;
   }
   if (dCount > 0) className += " doubted";
 

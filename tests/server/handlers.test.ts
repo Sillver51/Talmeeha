@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { io as Client, type Socket } from "socket.io-client";
 import type {
   ClientToServerEvents,
-  GameState,
+  PlayerView,
   ServerToClientEvents,
   Team,
 } from "@/lib/types";
@@ -29,7 +29,7 @@ function connect(): Socket {
   return Client(url, { transports: ["websocket"], forceNew: true });
 }
 
-const next = (s: Socket, ev: string): Promise<GameState> =>
+const next = (s: Socket, ev: string): Promise<PlayerView> =>
   new Promise((res) => s.once(ev, res));
 
 const nextJoined = (s: Socket): Promise<{ code: string; myId: string; isHost: boolean }> =>
@@ -37,9 +37,9 @@ const nextJoined = (s: Socket): Promise<{ code: string; myId: string; isHost: bo
 
 // Waits for a `state` broadcast that satisfies the predicate (events arrive across
 // independent sockets with no cross-socket ordering guarantee, so we poll deterministically).
-function waitForState(s: Socket, pred: (st: GameState) => boolean): Promise<GameState> {
+function waitForState(s: Socket, pred: (st: PlayerView) => boolean): Promise<PlayerView> {
   return new Promise((res) => {
-    const handler = (st: GameState) => {
+    const handler = (st: PlayerView) => {
       if (pred(st)) {
         s.off("state", handler);
         res(st);
@@ -49,7 +49,7 @@ function waitForState(s: Socket, pred: (st: GameState) => boolean): Promise<Game
   });
 }
 
-const teamsReady = (st: GameState): boolean =>
+const teamsReady = (st: PlayerView): boolean =>
   st.teams.red.length >= 2 &&
   st.teams.blue.length >= 2 &&
   st.leaders.red !== null &&
@@ -59,7 +59,7 @@ const teamsReady = (st: GameState): boolean =>
 // Layout: red leader = host, blue leader = guest, red member = redMember, blue member = blueMember.
 async function startOnlineGame(): Promise<{
   code: string;
-  state: GameState;
+  state: PlayerView;
   host: Socket;
   guest: Socket;
   redMember: Socket;
@@ -152,5 +152,30 @@ describe("play flow", () => {
     expect(ended.winner).toBe(other);
 
     [host, guest, redMember, blueMember].forEach((sock) => sock.close());
+  });
+});
+
+describe("role-filtered state (security regression)", () => {
+  it("never sends an unrevealed card's real type to a guesser", async () => {
+    const { code, state, host, guest, redMember, blueMember } = await startOnlineGame();
+    // redMember is a guesser (red team, not leader). Force a fresh broadcast it will
+    // receive by having the on-turn leader submit a clue (avoids racing the initial
+    // playing broadcast already consumed inside startOnlineGame).
+    const leader = state.turn === "red" ? host : guest;
+    leader.emit("submit_clue", { code, word: "تلميحة", num: 1 });
+    const view = await waitForState(redMember, (st) => st.gphase && st.board.length === 25);
+    const leaked = view.board.filter((c) => !c.rv && c.t !== "hidden");
+    expect(leaked).toHaveLength(0);
+    // Counts are still public so the UI can render remaining tallies.
+    expect(view.counts.red + view.counts.blue + view.counts.neutral).toBeGreaterThan(0);
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
+  });
+
+  it("sends the full key (no hidden cards) to a leader", async () => {
+    // `state` is the host's (red leader's) projected playing view from startOnlineGame.
+    const { state, host, guest, redMember, blueMember } = await startOnlineGame();
+    expect(state.board.some((c) => c.t === "hidden")).toBe(false);
+    expect(state.board.some((c) => c.t === "assassin")).toBe(true);
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
   });
 });

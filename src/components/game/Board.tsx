@@ -1,6 +1,6 @@
 "use client";
 
-import type { GameState, Team } from "@/lib/types";
+import type { PlayerView, Team } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
 import WordCard from "./WordCard";
@@ -10,7 +10,7 @@ import WordCard from "./WordCard";
  * Maps `gs.board` to `<WordCard/>`, threading role/turn/doubt context.
  */
 interface BoardProps {
-  gs: GameState;
+  gs: PlayerView;
   role: Role;
   myId: string | null;
   myTeam: Team | null;

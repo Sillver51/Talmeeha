@@ -1,6 +1,7 @@
 import type { Server, Socket } from "socket.io";
 import type { ClientToServerEvents, GameState, ServerToClientEvents, Team } from "@/lib/types";
 import { store } from "../rooms";
+import { broadcastState } from "../emit";
 import { startGameSchema, restartSchema } from "@/lib/schemas";
 import { buildBoard, remaining } from "@/lib/game";
 import { WORDS } from "@/lib/words";
@@ -46,7 +47,7 @@ export function registerLifecycleHandlers(
     };
 
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 
   // ── RESTART ──
@@ -75,7 +76,7 @@ export function registerLifecycleHandlers(
         };
 
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 
   // ── DISCONNECT ──
@@ -108,7 +109,7 @@ export function registerLifecycleHandlers(
 
       const next: GameState = { ...room, players, teams, leaders };
       store.set(code, next);
-      io.to(code).emit("state", next);
+      void broadcastState(io, code);
     }
   });
 }

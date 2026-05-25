@@ -1,6 +1,6 @@
 "use client";
 
-import type { GameState, Team } from "@/lib/types";
+import type { PlayerView, Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
 
 /**
@@ -12,7 +12,7 @@ import { useGameStore } from "@/store/gameStore";
  */
 
 /** Ported from legacy `canStart` (~941–944). */
-function canStart(gs: GameState): boolean {
+function canStart(gs: PlayerView): boolean {
   return (
     gs.teams.red.length >= 2 &&
     Boolean(gs.leaders.red) &&
@@ -36,7 +36,7 @@ const TEAM_STYLE: Record<Team, { bg: string; border: string; color: string }> = 
 
 interface TeamCardProps {
   team: Team;
-  gs: GameState;
+  gs: PlayerView;
 }
 
 function TeamCard({ team, gs }: TeamCardProps) {

@@ -7,6 +7,7 @@ import type {
   Team,
 } from "@/lib/types";
 import { store } from "../rooms";
+import { broadcastState } from "../emit";
 import { selectTeamSchema, becomeLeaderSchema } from "@/lib/schemas";
 
 // Returns a copy of the room with the socket removed from both team rosters.
@@ -53,7 +54,7 @@ export function registerTeamHandlers(
     };
 
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 
   socket.on("become_leader", (payload) => {
@@ -81,6 +82,6 @@ export function registerTeamHandlers(
 
     const next: GameState = { ...room, teams, players, leaders };
     store.set(code, next);
-    io.to(code).emit("state", next);
+    void broadcastState(io, code);
   });
 }

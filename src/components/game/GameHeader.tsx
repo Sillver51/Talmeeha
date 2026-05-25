@@ -1,7 +1,10 @@
 "use client";
 
-import type { GameState } from "@/lib/types";
+import type { PlayerView } from "@/lib/types";
 import { hGuesser, hLeader, type Role } from "@/lib/ui/roles";
+import TeamGlyph from "@/components/brand/TeamGlyph";
+import { usePrefsStore } from "@/store/prefsStore";
+import { formatNumber } from "@/lib/i18n/digits";
 
 /**
  * Game header (`.g-header`) — ports legacy markup (~759–771) + the score/wins/
@@ -9,7 +12,7 @@ import { hGuesser, hLeader, type Role } from "@/lib/ui/roles";
  * names, per-team wins badges, and a role/phase-dependent turn-box message.
  */
 interface GameHeaderProps {
-  gs: GameState;
+  gs: PlayerView;
   role: Role;
   myId: string | null;
   doubtMode: boolean;
@@ -19,7 +22,7 @@ interface GameHeaderProps {
 
 /** Ports the turn-box text + class logic (legacy ~1098–1106). */
 function turnBox(
-  gs: GameState,
+  gs: PlayerView,
   role: Role,
   myId: string | null,
   doubtMode: boolean,
@@ -72,18 +75,19 @@ export default function GameHeader({
   winsBlue,
 }: GameHeaderProps) {
   const tb = turnBox(gs, role, myId, doubtMode);
+  const digits = usePrefsStore((s) => s.digits);
 
   return (
     <div className="g-header">
       <div className="score-side">
         <div className="score-num score-num-red" id="sc-red">
-          {gs.sRed ?? 9}
+          {formatNumber(gs.sRed ?? 9, digits)}
         </div>
         <div className="score-label" id="hdr-red-name">
-          {gs.teamNames.red}
+          <TeamGlyph team="red" /> {gs.teamNames.red}
         </div>
         <div className="wins-badge wins-badge-red" id="wins-red-badge">
-          {winsRed} انتصار
+          {formatNumber(winsRed, digits)} انتصار
         </div>
       </div>
       <div className={tb.className} id="turn-box">
@@ -91,13 +95,13 @@ export default function GameHeader({
       </div>
       <div className="score-side">
         <div className="score-num score-num-blue" id="sc-blue">
-          {gs.sBlue ?? 8}
+          {formatNumber(gs.sBlue ?? 8, digits)}
         </div>
         <div className="score-label" id="hdr-blue-name">
-          {gs.teamNames.blue}
+          <TeamGlyph team="blue" /> {gs.teamNames.blue}
         </div>
         <div className="wins-badge wins-badge-blue" id="wins-blue-badge">
-          {winsBlue} انتصار
+          {formatNumber(winsBlue, digits)} انتصار
         </div>
       </div>
     </div>

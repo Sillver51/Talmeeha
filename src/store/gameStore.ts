@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { io, type Socket } from "socket.io-client";
 import type {
   ClientToServerEvents,
-  GameState,
+  PlayerView,
   ServerToClientEvents,
   Team,
 } from "@/lib/types";
@@ -43,7 +43,7 @@ interface GameStore {
   myName: string;
   roomCode: string | null;
   isHost: boolean;
-  gs: GameState | null;
+  gs: PlayerView | null;
   // local UI
   mode: Mode;
   clientScreen: ClientScreen;
