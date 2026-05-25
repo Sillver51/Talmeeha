@@ -153,8 +153,8 @@ function TimerPicker({ gs }: TimerPickerProps) {
         margin: ".7rem 0",
         padding: ".65rem .8rem",
         borderRadius: "var(--r)",
-        background: "rgba(255,255,255,.03)",
-        border: "1px solid rgba(255,255,255,.07)",
+        background: "var(--glass)",
+        border: "1px solid var(--border)",
       }}
     >
       <div
@@ -166,7 +166,7 @@ function TimerPicker({ gs }: TimerPickerProps) {
           textAlign: "center",
         }}
       >
-        ⏱️ مؤقّت الدور
+        <span aria-hidden="true">⏱️</span> مؤقّت الدور
       </div>
       <div
         style={{
@@ -183,11 +183,8 @@ function TimerPicker({ gs }: TimerPickerProps) {
             size="sm"
             disabled={!isLeader}
             onClick={() => setTimer(opt.value)}
-            style={
-              current === opt.value
-                ? { fontWeight: 800 }
-                : { opacity: isLeader ? 1 : 0.6 }
-            }
+            aria-describedby={!isLeader ? "timer-leader-hint" : undefined}
+            style={{ fontWeight: 800, ...(current !== opt.value ? { opacity: isLeader ? 1 : 0.6 } : {}) }}
           >
             {opt.label}
           </Button>
@@ -195,6 +192,7 @@ function TimerPicker({ gs }: TimerPickerProps) {
       </div>
       {!isLeader && (
         <div
+          id="timer-leader-hint"
           className="muted"
           style={{ fontSize: ".65rem", textAlign: "center", marginTop: ".4rem" }}
         >

@@ -1110,7 +1110,7 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   position:absolute;
   width:1px;height:1px;
   padding:0;margin:-1px;
-  overflow:hidden;clip:rect(0,0,0,0);
+  overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);
   white-space:nowrap;border:0;
 }
 
@@ -1145,7 +1145,7 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   stroke:var(--grape2);
   stroke-width:3;
   stroke-linecap:round;
-  transition:stroke-dashoffset 120ms linear;
+  transition:stroke-dashoffset var(--dur-fast) linear;
 }
 
 /* Numeral centred over the ring. */

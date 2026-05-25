@@ -33,7 +33,8 @@ export default function TurnTimer({ deadlineAt, durationMs }: TurnTimerProps) {
     if (deadlineAt == null) return;
     if ((secs === 30 || secs === 10) && announcedRef.current !== secs) {
       announcedRef.current = secs;
-      setAnnouncement(`${formatNumber(secs, digits)} ثانية متبقية`);
+      const unit = secs >= 3 && secs <= 10 ? "ثوانٍ" : "ثانية";
+      setAnnouncement(`${formatNumber(secs, digits)} ${unit} متبقية`);
     }
   }, [secs, deadlineAt, digits]);
 
@@ -69,7 +70,7 @@ export default function TurnTimer({ deadlineAt, durationMs }: TurnTimerProps) {
       </span>
 
       {/* Screen-reader live region — announces only at 30s and 10s. */}
-      <span className="sr-only" role="status" aria-live="polite">
+      <span className="sr-only" aria-live="polite">
         {announcement}
       </span>
     </div>
