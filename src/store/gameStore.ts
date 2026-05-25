@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { io, type Socket } from "socket.io-client";
+import { toast as sonnerToast } from "sonner";
 import type {
   ClientToServerEvents,
   PlayerView,
@@ -63,7 +64,6 @@ interface GameStore {
   doubtMode: boolean;
   hostViewLeader: boolean;
   peeking: boolean;
-  toastMsg: string | null;
   winsData: WinsData;
   hSetup: { red: HostTeamSetup; blue: HostTeamSetup };
   // lifecycle
@@ -81,7 +81,7 @@ interface GameStore {
   joinTeam(t: Team): void;
   becomeLeader(t: Team): void;
   startGame(): void;
-  submitClue(word: string, num: number): void;
+  submitClue(word: string, num: number): boolean;
   guessCard(i: number): void;
   toggleDoubt(i: number): void;
   endTurn(): void;
@@ -148,8 +148,6 @@ function saveName(n: string): void {
   }
 }
 
-let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
 export const useGameStore = create<GameStore>((set, get) => ({
   socket: null,
   myId: null,
@@ -165,7 +163,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
   doubtMode: false,
   hostViewLeader: false,
   peeking: false,
-  toastMsg: null,
   winsData: DEFAULT_WINS,
   hSetup: emptyHostSetup(),
 
@@ -394,23 +391,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
     socket.emit("start_game", { code: roomCode });
   },
 
+  // Returns true once the clue is emitted, false on any validation early-return —
+  // lets callers (LeaderPanel) clear inputs only on a successful submit.
   submitClue(word, num) {
     const w = word.trim();
     if (!w) {
       get().toast("أدخل كلمة التلميح");
-      return;
+      return false;
     }
     if (w.includes(" ")) {
       get().toast("كلمة واحدة فقط!");
-      return;
+      return false;
     }
     if (!num || num < 1) {
       get().toast("أدخل عدداً");
-      return;
+      return false;
     }
     const { socket, roomCode } = get();
-    if (!socket || !roomCode) return;
+    if (!socket || !roomCode) return false;
     socket.emit("submit_clue", { code: roomCode, word: w, num });
+    return true;
   },
 
   guessCard(i) {
@@ -467,10 +467,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ peeking: on });
   },
 
+  // Routes to sonner (single toast system). sonner's `toast()` is a global
+  // emitter, so it's safe to call from outside React / the Zustand store.
   toast(msg) {
-    set({ toastMsg: msg });
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => set({ toastMsg: null }), 2600);
+    sonnerToast(msg);
   },
 
   resetWins() {

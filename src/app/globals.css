@@ -785,22 +785,8 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 .wsb-reset{font-size:.68rem;color:var(--muted);cursor:pointer;text-decoration:underline;margin-bottom:.75rem;display:inline-block;}
 .wsb-reset:hover{color:var(--red2);}
 
-/* ─── TOAST ─── */
-.toast{
-  position:fixed;bottom:1.5rem;left:50%;
-  transform:translateX(-50%) translateY(70px);
-  background:rgba(26,26,46,0.95);
-  backdrop-filter:blur(12px);
-  border:1px solid var(--grape);
-  border-radius:var(--r-sm);
-  padding:.48rem 1.2rem;
-  font-size:.87rem;font-weight:700;
-  z-index:1000;
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
-  white-space:nowrap;direction:rtl;color:var(--text);
-  box-shadow:0 4px 20px rgba(139,92,246,0.2);
-}
-.toast.show{transform:translateX(-50%) translateY(0);}
+/* Toasts are rendered by the sonner <Toaster/> (see src/components/ui/sonner.tsx);
+   the legacy `.toast` / `.toast.show` rules were removed with the brand <Toast>. */
 
 /* ─── UTILS ─── */
 .divider{border:none;border-top:1px solid var(--border);margin:1rem 0;}

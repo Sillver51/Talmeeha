@@ -27,11 +27,10 @@ export default function LeaderPanel({ gs, isHost }: LeaderPanelProps) {
     : "🎯 القائد — أدخل التلميح";
 
   const send = () => {
-    const before = useGameStore.getState().toastMsg;
     const n = parseInt(num, 10);
-    submitClue(word, Number.isNaN(n) ? 0 : n);
-    // Clear only when the emit was valid (no new validation toast surfaced).
-    if (useGameStore.getState().toastMsg === before) {
+    // Clear inputs only when the emit was valid (submitClue returns false on
+    // any validation early-return, true once it emits).
+    if (submitClue(word, Number.isNaN(n) ? 0 : n)) {
       setWord("");
       setNum("1");
     }
