@@ -2,6 +2,7 @@
 
 import type { PlayerView, Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
+import RoomShare from "@/components/share/RoomShare";
 
 /**
  * Lobby screen (online mode) — ports legacy `#s-lobby` (~721–755) +
@@ -125,9 +126,7 @@ function TeamCard({ team, gs }: TeamCardProps) {
 
 export default function LobbyScreen() {
   const gs = useGameStore((s) => s.gs);
-  const roomCode = useGameStore((s) => s.roomCode);
   const startGame = useGameStore((s) => s.startGame);
-  const toast = useGameStore((s) => s.toast);
 
   if (!gs) return null;
 
@@ -141,15 +140,6 @@ export default function LobbyScreen() {
     .map((id) => gs.players[id]?.name)
     .filter((n): n is string => Boolean(n));
 
-  const copyCode = () => {
-    const value = roomCode ?? gs.code;
-    if (!value) return;
-    void navigator.clipboard
-      .writeText(value)
-      .then(() => toast(`تم نسخ الرمز 🍇 ${value}`))
-      .catch(() => toast("تعذّر النسخ"));
-  };
-
   return (
     <div className="screen on" id="s-lobby">
       <div style={{ textAlign: "center", marginBottom: "1.2rem" }}>
@@ -159,36 +149,9 @@ export default function LobbyScreen() {
         </div>
       </div>
       <div className="card" style={{ maxWidth: "520px" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: ".6rem",
-          }}
-        >
-          <div className="card-title" style={{ marginBottom: 0 }}>
-            رمز الغرفة
-          </div>
-          <span className="muted">انقر للنسخ</span>
-        </div>
-        <div
-          className="room-code-display"
-          id="lob-code"
-          role="button"
-          tabIndex={0}
-          onClick={copyCode}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              copyCode();
-            }
-          }}
-        >
-          {code}
-        </div>
-        <div className="muted tc" style={{ marginBottom: "1rem" }}>
-          شارك الرمز مع أصحابك
+        <RoomShare code={code} />
+        <div className="muted tc" style={{ margin: ".5rem 0 1rem" }}>
+          شارك الرمز أو امسح الكود مع أصحابك
         </div>
         <div
           style={{

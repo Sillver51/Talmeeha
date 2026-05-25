@@ -574,6 +574,15 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 }
 .room-code-display:hover{box-shadow:0 0 28px rgba(139,92,246,0.25);}
 
+/* ─── ROOM SHARE (code + QR) ─── */
+.room-share{display:flex;flex-direction:column;align-items:center;gap:.7rem;}
+.room-qr{
+  background:var(--glass);
+  border:1px solid var(--glass-brd);
+  border-radius:var(--r);
+  padding:.7rem;line-height:0;
+}
+
 /* ─── GAME LOG ─── */
 .game-log{
   background:rgba(8,8,18,0.7);
