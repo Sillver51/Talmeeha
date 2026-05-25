@@ -1,3 +1,8 @@
+/* Tailwind v4 (CSS-first) — must stay at the top. shadcn/ui components and
+   utility classes resolve against this import. All hand-built "Liquid Night"
+   vanilla styles below remain intact (coexistence, not a rip-out). */
+@import "tailwindcss";
+
 :root{
   /* backgrounds */
   --bg:       #0A0A0F;
