@@ -58,6 +58,14 @@
   --glass:     rgba(255,255,255,.045);
   --glass-brd: rgba(255,255,255,.10);
   --grad-signature: linear-gradient(90deg, var(--grape) 0%, var(--gold) 50%, var(--cyan) 100%);
+
+  /* Motion tokens (Liquid Night) */
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ease-out:    cubic-bezier(.22,1,.36,1);
+  --dur-fast:    140ms;
+  --dur-base:    240ms;
+  --dur-slow:    420ms;
+  --motion-scale: 1;            /* reduced-motion sets this to 0 */
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -123,7 +131,7 @@ body::after{
 
 /* ─── LOGO ─── */
 .logo{
-  font-size:4.2rem;font-weight:900;letter-spacing:-2px;line-height:1;
+  font-size:clamp(2.6rem, 11vw, 4.2rem);font-weight:900;letter-spacing:-2px;line-height:1;
   background:linear-gradient(135deg,var(--grape2) 0%,var(--gold2) 50%,var(--red2) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
@@ -371,7 +379,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 }
 .clue-label-sm{font-size:.68rem;color:var(--muted);font-weight:600;white-space:nowrap;letter-spacing:.3px;}
 .clue-word-big{
-  font-size:1.5rem;font-weight:900;letter-spacing:-.5px;
+  font-size:clamp(1.25rem, 5.5vw, 1.7rem);font-weight:900;letter-spacing:-.5px;
   background:var(--grad-signature);
   background-size:200% auto;
   -webkit-background-clip:text;background-clip:text;color:transparent;
@@ -427,7 +435,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 .wc{
   background:var(--glass);
   color:var(--text);
-  backdrop-filter:blur(6px);
+  backdrop-filter: blur(8px) saturate(1.15);
   border-radius:12px;
   padding:.55rem .25rem;
   text-align:center;
@@ -440,7 +448,10 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   position:relative;overflow:hidden;
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   cursor:pointer;
-  box-shadow:0 4px 14px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -2px 4px rgba(0,0,0,.30);
   letter-spacing:.2px;
 }
 .wc::after{
@@ -684,6 +695,10 @@ html[data-reduced-motion="on"] *::after{
   transition: none !important;
   scroll-behavior: auto !important;
 }
+html[data-reduced-motion="on"]{ --motion-scale: 0; }
+@media (prefers-reduced-motion: reduce){
+  html:not([data-reduced-motion="off"]){ --motion-scale: 0; }
+}
 
 /* ─── TEAM GLYPH (color-independent identity) ─── */
 .team-glyph{
@@ -777,7 +792,7 @@ html[data-reduced-motion="on"] .confetti{display:none;}
 }
 .onboard-card .grape-emoji{font-size:4.5rem;}
 .onboard-title{
-  font-size:3rem;font-weight:900;
+  font-size:clamp(2.1rem, 9vw, 3rem);font-weight:900;
   background:var(--grad-signature);-webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .onboard-lead{color:var(--text2);font-weight:600;line-height:1.7;font-size:1rem;}
@@ -809,3 +824,37 @@ html[data-reduced-motion="on"] .confetti{display:none;}
 }
 .handoff-label{font-weight:800;font-size:.85rem;color:var(--text2);}
 .btn.peeking{box-shadow:0 0 0 2px var(--gold2), 0 0 18px rgba(232,160,32,.4);}
+
+/* ─── LIQUID GLASS MATERIAL ─── */
+/* Edge highlight + specular sheen applied to glass surfaces via ::before.
+   Surfaces opt in with .lg (added alongside existing classes) or are mapped below. */
+.card, .clue-panel, .leader-panel, .host-bar, .counter-pill, .turn-chip,
+.settings-sheet, .g-header{
+  position: relative;
+}
+.card::before, .clue-panel::before, .g-header::before{
+  content:"";
+  position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 28%),
+    radial-gradient(120% 60% at 50% -10%, rgba(255,255,255,.08), transparent 60%);
+  mix-blend-mode: screen;
+  opacity:.7;
+}
+.card, .clue-panel, .g-header{
+  border:1px solid var(--glass-brd);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(0,0,0,.35);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+/* ─── SCREEN ENTER TRANSITION ─── */
+@keyframes screenEnter{
+  from{ opacity:0; transform: translateY(calc(10px * var(--motion-scale))) scale(calc(1 - .01 * var(--motion-scale))); }
+  to  { opacity:1; transform: none; }
+}
+.screen-enter{
+  animation: screenEnter calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
+}
