@@ -1216,9 +1216,4 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   border-color:var(--grape);
   box-shadow:0 0 0 3px var(--grape-dim);
 }
-.room-code-display:focus-visible{
-  outline:none;
-  border-color:var(--grape);
-  box-shadow:0 0 0 3px var(--grape-dim);
-}
 

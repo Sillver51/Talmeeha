@@ -118,7 +118,7 @@ export default function WordCard({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       role={isInteractive ? "button" : undefined}
-      tabIndex={isInteractive ? 0 : -1}
+      tabIndex={isInteractive ? 0 : undefined}
       aria-label={isInteractive ? card.w : undefined}
       style={style}
       title={hostActionable ? "انقر للتخمين | Shift+انقر للشك" : undefined}

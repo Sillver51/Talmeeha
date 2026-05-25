@@ -1,12 +1,7 @@
 "use client";
 
-import type { KeyboardEvent } from "react";
 import type { PlayerView, Team } from "@/lib/types";
 import type { TimerPreset } from "@/lib/game";
-
-const onKey = (e: KeyboardEvent, fn: () => void) => {
-  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
-};
 import { PRESETS } from "@/lib/game";
 import { useGameStore } from "@/store/gameStore";
 import RoomShare from "@/components/share/RoomShare";
@@ -55,8 +50,6 @@ function TeamCard({ team, gs }: TeamCardProps) {
   const style = TEAM_STYLE[team];
   const isRed = team === "red";
 
-  const teamName = gs.teamNames[team];
-
   return (
     <div
       style={{
@@ -65,13 +58,7 @@ function TeamCard({ team, gs }: TeamCardProps) {
         borderRadius: "var(--r)",
         padding: ".8rem .65rem",
         textAlign: "center",
-        cursor: "pointer",
       }}
-      role="button"
-      tabIndex={0}
-      aria-label={`الانضمام إلى ${teamName}`}
-      onClick={() => joinTeam(team)}
-      onKeyDown={(e) => onKey(e, () => joinTeam(team))}
     >
       <div style={{ fontSize: "1.4rem", marginBottom: ".2rem" }}>
         {isRed ? "🔴" : "🔵"}
@@ -131,11 +118,16 @@ function TeamCard({ team, gs }: TeamCardProps) {
         })}
       </ul>
       <button
+        className="btn btn-sm btn-outline mt"
+        onClick={() => joinTeam(team)}
+        aria-label={`الانضمام إلى ${gs.teamNames[team]}`}
+      >
+        انضمّ
+      </button>
+      <button
         className={isRed ? "btn btn-sm btn-red mt" : "btn btn-sm btn-blue mt"}
-        onClick={(e) => {
-          e.stopPropagation();
-          becomeLeader(team);
-        }}
+        aria-label={`أصبح قائداً لـ ${gs.teamNames[team]}`}
+        onClick={() => becomeLeader(team)}
       >
         ⭐ قائداً
       </button>
