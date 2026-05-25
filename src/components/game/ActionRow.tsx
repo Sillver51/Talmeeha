@@ -1,6 +1,7 @@
 "use client";
 
 import { useGameStore } from "@/store/gameStore";
+import { Button } from "@/components/ui/button";
 
 /**
  * Guesser action row (`.action-row`) — ports legacy markup (~808–811) +
@@ -15,16 +16,18 @@ export default function ActionRow() {
 
   return (
     <div className="action-row" id="action-row" style={{ display: "flex" }}>
-      <button className="btn btn-ghost btn-sm" onClick={endTurn}>
+      <Button variant="ghost" size="sm" onClick={endTurn}>
         ⏭ إنهاء الدور
-      </button>
-      <button
-        className={doubtMode ? "btn btn-doubt-active btn-sm" : "btn btn-doubt btn-sm"}
+      </Button>
+      <Button
+        variant="doubt"
+        size="sm"
+        aria-pressed={doubtMode}
         id="doubt-btn"
         onClick={toggleDoubtMode}
       >
         {doubtMode ? "✅ وضع الشك — انقر على كلمة للتشكيك" : "🤔 علامة شك"}
-      </button>
+      </Button>
     </div>
   );
 }

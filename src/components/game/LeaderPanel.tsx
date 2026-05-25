@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { PlayerView } from "@/lib/types";
 import { hLeader } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
+import { Button } from "@/components/ui/button";
 
 /**
  * Leader clue form (`.leader-panel`) — ports legacy markup (~798–806) +
@@ -61,9 +62,9 @@ export default function LeaderPanel({ gs, isHost }: LeaderPanelProps) {
           value={num}
           onChange={(e) => setNum(e.target.value)}
         />
-        <button className="btn btn-gold btn-sm" onClick={send}>
+        <Button variant="gold" size="sm" onClick={send}>
           إرسال
-        </button>
+        </Button>
       </div>
       <div
         className="muted"

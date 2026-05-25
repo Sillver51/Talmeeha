@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
+import { Button } from "@/components/ui/button";
 
 /**
  * Setup screen (host mode) — ports legacy `#s-setup` (~679–719) + `renderSetup`
@@ -61,12 +62,13 @@ function TeamSetupCard({ team, teamName, onTeamNameChange }: TeamSetupCardProps)
             if (e.key === "Enter") submit();
           }}
         />
-        <button
-          className={isRed ? "btn btn-red btn-sm" : "btn btn-blue btn-sm"}
+        <Button
+          variant={isRed ? "red" : "blue"}
+          size="sm"
           onClick={submit}
         >
           + أضف
-        </button>
+        </Button>
       </div>
       <div className="players-tags" id={`${team}-tags`}>
         {setup.players.map((name) => {
@@ -143,14 +145,15 @@ export default function SetupScreen() {
           />
         </div>
         <div className="setup-footer">
-          <button
-            className="btn btn-gold"
+          <Button
+            variant="gold"
+            className="w-full"
             id="btn-launch"
             disabled={!ok}
             onClick={() => launchHostGame(redName, blueName)}
           >
             🚀 ابدأ اللعبة
-          </button>
+          </Button>
           <div
             className="can-start-hint"
             id="launch-hint"
@@ -158,9 +161,9 @@ export default function SetupScreen() {
           >
             يحتاج كل فريق لاعبَين على الأقل + قائد واحد
           </div>
-          <button className="btn btn-outline mt" onClick={goHome}>
+          <Button variant="outline" className="w-full mt" onClick={goHome}>
             <bdi>←</bdi> رجوع
-          </button>
+          </Button>
         </div>
       </div>
     </div>

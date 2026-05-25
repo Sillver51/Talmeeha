@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -32,8 +33,9 @@ export default function InstallButton() {
   if (installed || !deferred) return null;
 
   return (
-    <button
-      className="btn btn-gold btn-sm"
+    <Button
+      variant="gold"
+      size="sm"
       aria-label="تثبيت التطبيق"
       onClick={async () => {
         await deferred.prompt();
@@ -41,6 +43,6 @@ export default function InstallButton() {
       }}
     >
       📲 تثبيت
-    </button>
+    </Button>
   );
 }

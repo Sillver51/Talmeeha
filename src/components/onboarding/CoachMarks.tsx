@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatDigits } from "@/lib/i18n/digits";
+import { Button } from "@/components/ui/button";
 
 const SEEN_KEY = "talmeeha_coached";
 
@@ -59,16 +60,17 @@ export default function CoachMarks() {
         </div>
         <p className="coach-text">{TIPS[step]}</p>
         <div className="coach-actions">
-          <button className="btn btn-ghost btn-sm" onClick={finish}>
+          <Button variant="ghost" size="sm" onClick={finish}>
             تخطّي
-          </button>
-          <button
+          </Button>
+          <Button
             ref={nextRef}
-            className="btn btn-gold btn-sm"
+            variant="gold"
+            size="sm"
             onClick={() => (isLast ? finish() : setStep((s) => s + 1))}
           >
             {isLast ? "فهمت 🍇" : <>التالي <bdi>←</bdi></>}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

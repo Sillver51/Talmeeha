@@ -121,20 +121,24 @@ function TeamCard({ team, gs }: TeamCardProps) {
           );
         })}
       </ul>
-      <button
-        className="btn btn-sm btn-outline mt"
+      <Button
+        variant="outline"
+        size="sm"
+        className="mt"
         onClick={() => joinTeam(team)}
         aria-label={`الانضمام إلى ${gs.teamNames[team]}`}
       >
         انضمّ
-      </button>
-      <button
-        className={isRed ? "btn btn-sm btn-red mt" : "btn btn-sm btn-blue mt"}
+      </Button>
+      <Button
+        variant={isRed ? "red" : "blue"}
+        size="sm"
+        className="mt"
         aria-label={`أصبح قائداً لـ ${gs.teamNames[team]}`}
         onClick={() => becomeLeader(team)}
       >
         ⭐ قائداً
-      </button>
+      </Button>
     </div>
   );
 }
@@ -260,14 +264,15 @@ export default function LobbyScreen() {
         </div>
         <TimerPicker gs={gs} />
         <div className="divider"></div>
-        <button
-          className="btn btn-gold"
+        <Button
+          variant="gold"
+          className="w-full"
           id="btn-start"
           disabled={!ok}
           onClick={startGame}
         >
           🚀 ابدأ اللعبة
-        </button>
+        </Button>
         <div
           className="muted tc"
           id="start-hint"

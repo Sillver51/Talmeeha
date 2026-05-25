@@ -7,6 +7,7 @@ import { formatNumber } from "@/lib/i18n/digits";
 import { useCountUp } from "@/lib/ui/useCountUp";
 import { shareResult } from "@/lib/share/renderShareCard";
 import Confetti from "@/components/game/Confetti";
+import { Button } from "@/components/ui/button";
 
 /**
  * Win modal (`#win-modal`) — ports legacy markup (~817–828) + `showWin`/
@@ -118,23 +119,25 @@ export default function WinModal({ gs }: WinModalProps) {
         >
           تصفير النتيجة ↺
         </span>
-        <button
-          className="btn btn-outline w100"
+        <Button
+          variant="outline"
+          className="w-full"
           style={{ marginBottom: ".55rem" }}
           onClick={onShare}
         >
           📤 شارك النتيجة
-        </button>
-        <button
-          className="btn btn-gold w100"
+        </Button>
+        <Button
+          variant="gold"
+          className="w-full"
           style={{ marginBottom: ".55rem" }}
           onClick={restart}
         >
           🔄 جولة جديدة
-        </button>
-        <button className="btn btn-outline" onClick={goHome}>
+        </Button>
+        <Button variant="outline" className="w-full" onClick={goHome}>
           🏠 الرئيسية
-        </button>
+        </Button>
       </div>
     </div>
   );
