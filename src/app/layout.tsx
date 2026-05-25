@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,15 @@ const tajawal = Tajawal({
 export const metadata: Metadata = {
   title: "تلميحة 🍇",
   description: "لعبة الفرق والكلمات",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "تلميحة", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0A0F",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
