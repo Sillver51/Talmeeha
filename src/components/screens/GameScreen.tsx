@@ -27,7 +27,19 @@ export default function GameScreen() {
   const doubtMode = useGameStore((s) => s.doubtMode);
   const winsData = useGameStore((s) => s.winsData);
 
-  if (!gs || !gs.board || !gs.board.length) return null;
+  if (!gs || !gs.board || !gs.board.length) {
+    return (
+      <div
+        className="screen on"
+        style={{ display: "grid", placeItems: "center", minHeight: "60vh" }}
+      >
+        <div className="muted tc" role="status" aria-live="polite">
+          <div style={{ fontSize: "2rem" }} aria-hidden="true">🍇</div>
+          جارٍ التحميل…
+        </div>
+      </div>
+    );
+  }
 
   const role = myRole(gs, myId, isHost);
   const isLeader = role === "leader";
@@ -59,6 +71,12 @@ export default function GameScreen() {
 
       {playing && gs.turnDeadlineAt != null && (
         <TurnTimer deadlineAt={gs.turnDeadlineAt} durationMs={gs.timer?.durationMs} />
+      )}
+
+      {playing && role === "spectator" && (
+        <div className="spectator-notice" role="status">
+          👁️ أنت تُشاهد — اللعبة جارية. انضمّ إلى فريق في الجولة القادمة.
+        </div>
       )}
 
       {isHost && <HostBar gphase={gs.gphase} />}
