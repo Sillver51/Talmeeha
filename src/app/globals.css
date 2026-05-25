@@ -435,7 +435,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 .wc{
   background:var(--glass);
   color:var(--text);
-  backdrop-filter:blur(6px);
+  backdrop-filter: blur(8px) saturate(1.15);
   border-radius:12px;
   padding:.55rem .25rem;
   text-align:center;
@@ -448,7 +448,10 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   position:relative;overflow:hidden;
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   cursor:pointer;
-  box-shadow:0 4px 14px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -2px 4px rgba(0,0,0,.30);
   letter-spacing:.2px;
 }
 .wc::after{
@@ -821,3 +824,28 @@ html[data-reduced-motion="on"] .confetti{display:none;}
 }
 .handoff-label{font-weight:800;font-size:.85rem;color:var(--text2);}
 .btn.peeking{box-shadow:0 0 0 2px var(--gold2), 0 0 18px rgba(232,160,32,.4);}
+
+/* ─── LIQUID GLASS MATERIAL ─── */
+/* Edge highlight + specular sheen applied to glass surfaces via ::before.
+   Surfaces opt in with .lg (added alongside existing classes) or are mapped below. */
+.card, .clue-panel, .leader-panel, .host-bar, .counter-pill, .turn-chip,
+.settings-sheet, .g-header{
+  position: relative;
+}
+.card::before, .clue-panel::before, .g-header::before{
+  content:"";
+  position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 28%),
+    radial-gradient(120% 60% at 50% -10%, rgba(255,255,255,.08), transparent 60%);
+  mix-blend-mode: screen;
+  opacity:.7;
+}
+.card, .clue-panel, .g-header{
+  border:1px solid var(--glass-brd);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(0,0,0,.35);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
