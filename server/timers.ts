@@ -1,12 +1,10 @@
 import type { Server } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents } from "@/lib/types";
-import { addLog, applyTurnDeadline, nextTurn, needsSuddenDeath, endTimedGame } from "@/lib/game";
+import { addLog, applyTurnDeadline, nextTurn, needsSuddenDeath, endTimedGame, SUDDEN_DEATH_AFTER_TIMEOUTS } from "@/lib/game";
 import { store } from "./rooms";
 import { broadcastState } from "./emit";
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
-
-const SUDDEN_DEATH_AFTER_TIMEOUTS = 2;
 
 /** One pending turn-deadline timeout per room, keyed by room code. */
 const timers = new Map<string, ReturnType<typeof setTimeout>>();

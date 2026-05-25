@@ -75,6 +75,9 @@ export function registerHostHandlers(
       hBlue,
       sRed: remaining(board, "red"),
       sBlue: remaining(board, "blue"),
+      wrongGuesses: { red: 0, blue: 0 },
+      clockTimeouts: 0,
+      endedOnClock: false,
     };
 
     store.set(code, room);

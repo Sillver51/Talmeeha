@@ -400,6 +400,79 @@ describe("blitz timer", () => {
     }
   });
 
+  // Deterministic: a voluntary end_turn resets the clockTimeouts streak to 0, so the
+  // immediately following expiry is only count=1 and does NOT trigger sudden-death.
+  it("voluntary end_turn resets the streak so the next timeout alone does not end the game", async () => {
+    vi.useFakeTimers();
+    try {
+      const code = "0009";
+      const card = (t: Card["t"]): Card => ({ w: "x", t, rv: false });
+
+      // Room has already had one timeout — streak is at 1.
+      const roomAfterTimeout: GameState = {
+        code,
+        phase: "playing",
+        hostMode: false,
+        board: [
+          card("red"),
+          card("red"),
+          card("blue"),
+          card("blue"),
+          card("neutral"),
+          card("assassin"),
+        ],
+        turn: "red",
+        clue: null,
+        gleft: 0,
+        gphase: false,
+        winner: null,
+        teams: { red: [], blue: [] },
+        leaders: { red: null, blue: null },
+        teamNames: { red: "أحمر", blue: "أزرق" },
+        players: {},
+        doubts: {},
+        wins: { red: 0, blue: 0 },
+        sRed: 2,
+        sBlue: 2,
+        log: [],
+        timer: { enabled: true, preset: "blitz", durationMs: 30 },
+        clockTimeouts: 1, // one prior timeout in the streak
+        wrongGuesses: { red: 0, blue: 0 },
+      };
+
+      // Simulate the effect of a voluntary end_turn: reset clockTimeouts to 0 and flip the turn.
+      // This mirrors what the end_turn handler does: nextTurn({ ...room, clockTimeouts: 0, ... }).
+      const roomAfterEndTurn: GameState = {
+        ...roomAfterTimeout,
+        turn: "blue",
+        clockTimeouts: 0, // streak reset by the voluntary action
+        clue: null,
+        gleft: 0,
+        gphase: false,
+      };
+
+      store.set(code, roomAfterEndTurn);
+
+      const stubIo = { in: () => ({ fetchSockets: async () => [] }) } as unknown as Server;
+      armTurnDeadline(stubIo, code);
+
+      // Fire exactly one expiry (30ms duration); this is the first timeout since the reset.
+      await vi.advanceTimersByTimeAsync(35);
+
+      const after = store.get(code)!;
+      // The streak was 0 before this expiry, so count becomes 1 — below the threshold of 2.
+      // The game must still be playing (no sudden-death), and clockTimeouts must be 1.
+      expect(after.phase).toBe("playing"); // NOT ended — streak reset prevented premature sudden-death
+      expect(after.winner).toBeNull();
+      expect(after.clockTimeouts).toBe(1); // now at 1, not 2
+
+      cancelTurnDeadline(code);
+      store.delete(code);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   // Deterministic: with clockTimeouts already at 1, the NEXT expiry hits the threshold
   // of 2. Both teams still hold words → sudden-death resolves the game WITHOUT revealing.
   it("a second consecutive timeout triggers sudden-death without revealing a card", async () => {
@@ -447,7 +520,8 @@ describe("blitz timer", () => {
 
       const after = store.get(code)!;
       expect(after.phase).toBe("ended"); // sudden-death resolved the game
-      expect(after.winner === "red" || after.winner === "blue").toBe(true); // a valid team won
+      // Fixture: both remaining=2, wrongGuesses {0,0}, turn:"red" → tier-3 picks opponent of on-clock team = "blue"
+      expect(after.winner).toBe("blue"); // deterministic: opponent of the on-clock team
       expect(after.endedOnClock).toBe(true); // ended on the clock
       expect(after.board.filter((c) => c.rv).length).toBe(revealedBefore); // NEVER revealed
 

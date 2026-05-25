@@ -79,9 +79,10 @@ export function resolveGuess(
   }
 
   // neutral/enemy: log the miss, then check win (revealing an enemy card can win it for them)
+  const wt = wrongTally(s);
   s = {
     ...s,
-    wrongGuesses: { ...wrongTally(s), [s.turn]: wrongTally(s)[s.turn] + 1 },
+    wrongGuesses: { ...wt, [s.turn]: wt[s.turn] + 1 },
     log: addLog(s.log, `❌ ${by}: "${card.w}"`),
   };
   const won = checkWin(board);

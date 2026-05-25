@@ -1,6 +1,9 @@
 import { remaining } from "./win";
 import type { Card, Team } from "@/lib/types";
 
+/** Number of consecutive turn-timeouts (across teams) that ends a timed game via sudden death. */
+export const SUDDEN_DEATH_AFTER_TIMEOUTS = 2;
+
 export interface SuddenDeathRoom {
   board: readonly Card[];
   /** The team currently "on the clock" (whose timer expired). */

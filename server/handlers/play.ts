@@ -125,7 +125,7 @@ export function registerPlayHandlers(
       room.leaders[room.turn] !== socket.id;
     if (!isHost && !isGuesser) return;
 
-    const next = nextTurn({ ...room, log: addLog(room.log, "⏭ انتهى الدور") });
+    const next = nextTurn({ ...room, clockTimeouts: 0, log: addLog(room.log, "⏭ انتهى الدور") });
 
     store.set(code, next);
     armTurnDeadline(io, code); // a manual end always flips the turn → re-arm for the new team
