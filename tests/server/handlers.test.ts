@@ -1,14 +1,18 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { createServer, type Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
 import { io as Client, type Socket } from "socket.io-client";
 import type {
+  Card,
   ClientToServerEvents,
+  GameState,
   PlayerView,
   ServerToClientEvents,
   Team,
 } from "@/lib/types";
 import { registerHandlers } from "../../server/socket";
+import { store } from "../../server/rooms";
+import { armTurnDeadline, cancelTurnDeadline } from "../../server/timers";
 
 let http: HttpServer;
 let url: string;
@@ -54,7 +58,10 @@ const teamsReady = (st: PlayerView): boolean =>
 
 // Drives create→join→teams→leaders into a ready lobby, then starts the game.
 // Layout: red leader = host, blue leader = guest, red member = redMember, blue member = blueMember.
-async function startOnlineGame(): Promise<{
+// Optionally enables a turn timer in the lobby (set_timer is rejected mid-game) before start.
+async function startOnlineGame(
+  timerPreset?: "relaxed" | "normal" | "blitz",
+): Promise<{
   code: string;
   state: PlayerView;
   host: Socket;
@@ -86,6 +93,14 @@ async function startOnlineGame(): Promise<{
   blueMember.emit("select_team", { code, team: "blue" });
 
   await waitForState(host, teamsReady);
+
+  if (timerPreset) {
+    host.emit("set_timer", { code, preset: timerPreset }); // host is the red leader → authorized
+    await waitForState(
+      host,
+      (st) => st.timer?.enabled === true && st.timer.preset === timerPreset,
+    );
+  }
 
   host.emit("start_game", { code });
   const state = await waitForState(host, (st) => st.phase === "playing");
@@ -225,5 +240,75 @@ describe("reconnection", () => {
     expect(typeof err).toBe("string");
 
     [a, b, x].forEach((s) => s.close());
+  });
+});
+
+describe("blitz timer", () => {
+  it("enabling a timer in the lobby projects turnDeadlineAt once the game starts", async () => {
+    const before = Date.now();
+    const { state, host, guest, redMember, blueMember } = await startOnlineGame("blitz");
+    expect(typeof state.turnDeadlineAt).toBe("number");
+    // blitz = 30s ahead of when the turn started
+    expect(state.turnDeadlineAt!).toBeGreaterThan(before);
+    expect(state.turnDeadlineAt!).toBeLessThanOrEqual(Date.now() + 30000 + 1000);
+    expect(state.timer?.enabled).toBe(true);
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
+  });
+
+  // Deterministic: drives the scheduler directly (no real sockets) so it's fast and stable.
+  // The critical invariant — an expired turn PASSES but NEVER reveals a card — is asserted here.
+  it("timer expiry passes the turn and never reveals a card", async () => {
+    vi.useFakeTimers();
+    try {
+      const code = "0007";
+      const card = (t: Card["t"]): Card => ({ w: "x", t, rv: false });
+      const room: GameState = {
+        code,
+        phase: "playing",
+        hostMode: false,
+        board: [
+          card("red"),
+          card("red"),
+          card("blue"),
+          card("blue"),
+          card("neutral"),
+          card("assassin"),
+        ],
+        turn: "red",
+        clue: null,
+        gleft: 0,
+        gphase: false,
+        winner: null,
+        teams: { red: [], blue: [] },
+        leaders: { red: null, blue: null },
+        teamNames: { red: "أحمر", blue: "أزرق" },
+        players: {},
+        doubts: {},
+        wins: { red: 0, blue: 0 },
+        sRed: 2,
+        sBlue: 2,
+        log: [],
+        timer: { enabled: true, preset: "blitz", durationMs: 30 },
+      };
+      store.set(code, room);
+      const revealedBefore = room.board.filter((c) => c.rv).length; // 0
+
+      const stubIo = { in: () => ({ fetchSockets: async () => [] }) } as unknown as Server;
+      armTurnDeadline(stubIo, code);
+
+      // Fire exactly one expiry (30ms duration); the re-armed next one (at 60ms) must NOT fire.
+      await vi.advanceTimersByTimeAsync(35);
+
+      const after = store.get(code)!;
+      expect(after.turn).toBe("blue"); // turn PASSED
+      expect(after.board.filter((c) => c.rv).length).toBe(revealedBefore); // NEVER revealed
+      expect(after.phase).toBe("playing"); // game NOT ended
+      expect(after.log[0]).toContain("انتهى الوقت"); // went through expire()
+
+      cancelTurnDeadline(code); // clear the re-armed timer
+      store.delete(code);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
