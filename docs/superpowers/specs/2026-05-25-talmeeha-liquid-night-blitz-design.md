@@ -45,7 +45,7 @@ Native, zero-cost: **View Transitions** (`next.config` `viewTransition: true` + 
 - **Motion tokens:** `--ease-spring: cubic-bezier(.34,1.56,.64,1)`, `--dur-fast/-base/-slow`, and `--motion-scale` (1 normally; `[data-reduced-motion="on"]` and the OS `prefers-reduced-motion` query set it to 0). Animations multiply durations by `--motion-scale` — one knob, no scattered `!important`.
 - `:has()` for parent-state styling (board dims when a tile is being revealed) without JS.
 
-> **Constraint:** no Tailwind introduction — keep the plain `globals.css` + CSS-vars approach; just modernize it. Word-card state classes keep their semantics (color = meaning); never recolor them decoratively.
+> **CSS decision (updated 2026-05-25): adopt shadcn/ui + Tailwind v4.** *(Supersedes the original "no Tailwind introduction" constraint.)* Tailwind v4 (CSS-first, `@import "tailwindcss"`, no `tailwind.config.js`) + shadcn/ui (Radix, copy-in components in `src/components/ui/`) is now the component system, **coexisting** with the existing `globals.css` CSS-vars approach — the vanilla styles are NOT ripped out. The modern-CSS token pass above still stands (oklch/`color-mix()`/clamp/container/motion-tokens); shadcn's semantic tokens (`--primary`/`--ring` = grape, dark `--background`, gold/teams) are mapped to the brand palette in oklch in `globals.css`. Config: `components.json` (`style: radix-nova`, `rtl: true`, `cssVariables: true`). One font (Tajawal) preserved via `--font-sans`. Word-card state classes keep their semantics (color = meaning); never recolor them decoratively. See DESIGN.md §4a for the full token map and component locations.
 
 ## 4. Liquid Night visual system
 
@@ -111,7 +111,7 @@ Evolves Neon Night (not a reset). Dark cosmos + neon teams (`--red`, `--blue`), 
 
 ## 11. Build slices (each = its own implementation plan; each ships green: `tsc` + tests + build + reviewer + Playwright smoke)
 
-1. **Foundation** — modern-CSS token pass (oklch/color-mix/container/clamp/motion-tokens) + liquid-glass material + add deps (`motion`, `auto-animate`, `canvas-confetti`) + enable View Transitions for screen changes. Visual refresh of all existing screens with no behavior change.
+1. **Foundation** — **shadcn/ui + Tailwind v4 adoption** (CSS-first; `components.json` `radix-nova`/`rtl:true`/`cssVariables`; brand tokens mapped to shadcn semantics in oklch; core components in `src/components/ui/`; coexists with existing vanilla `globals.css` — see §3 CSS decision + DESIGN.md §4a) + modern-CSS token pass (oklch/color-mix/container/clamp/motion-tokens) + liquid-glass material + add deps (`motion`, `auto-animate`, `canvas-confetti`) + enable View Transitions for screen changes. Visual refresh of all existing screens with no behavior change.
 2. **Tactile board** — 3D card-flip reveal, press/stagger/count-ups, optimistic flip. The hero interactions.
 3. **Signature moments** — shared-element tile→win-modal, confetti/win sequence (+ optional lazy GSAP), leader "you hold the key" reveal, lobby presence energy.
 4. **Sound + haptics** — `use-sound`/Howler sprite (CC0), `AudioContext` unlock, `prefsStore` sound/volume/haptics, Settings controls, haptics layer.
