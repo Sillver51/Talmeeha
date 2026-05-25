@@ -161,6 +161,55 @@ team-colored title, two-card persistent scoreboard (winner card gold-tinted).
 
 ---
 
+## 4a. Component System — shadcn/ui + Tailwind v4
+
+Adopted as the component layer (Radix primitives, copy-in components). It **coexists**
+with the hand-built vanilla styles above — nothing was ripped out. The vanilla classes
+(`.btn`, `.card`, `.wc`, …) still drive the live game; shadcn is the path forward for new
+and migrated UI.
+
+**Where it lives**
+- Components: `src/components/ui/` (e.g. `button.tsx`, `card.tsx`, `dialog.tsx`,
+  `switch.tsx`, `tooltip.tsx`, `sonner.tsx`). Added via `npx shadcn@latest add <name>`.
+- Helper: `src/lib/utils.ts` → `cn()` (clsx + tailwind-merge).
+- Config: `components.json` (`style: radix-nova`, `rtl: true`, `cssVariables: true`,
+  `@/*` aliases, src dir). Tailwind v4 is **CSS-first** — no `tailwind.config.js`.
+- CSS entry: `src/app/globals.css` starts with `@import "tailwindcss"` +
+  `@import "tw-animate-css"` + `@import "shadcn/tailwind.css"`, then `@custom-variant dark`.
+
+**Token mapping (brand → shadcn).** shadcn's semantic tokens are wired to our Liquid-Night
+palette in `globals.css` (in a dedicated `:root, .dark` block + `@theme inline`), using
+**oklch**. The app is always-dark, so dark values are set on both `:root` and `.dark`.
+**Single source of truth:** there is exactly ONE shadcn token block and ONE `@theme inline`
+— the CLI's appended default neutral/gray block was removed so the system stays unified (no
+duplicate, no conflicting `--primary`/`--background`). The `@layer base` reset is scoped to
+`[data-slot]` (shadcn components) so it never fights the global vanilla `body`.
+
+| shadcn token | Mapped to | Note |
+|---|---|---|
+| `--background` / `--foreground` | `--bg #0A0A0F` / `--text #EEEEFF` | dark cosmos |
+| `--card` / `--popover` | `--surface #1A1A2E` | translucent surface |
+| `--primary` / `--ring` | `--grape #8B5CF6` | brand + focus ring |
+| `--secondary` / `--muted` | `--surface2 #1F1F38` | raised surface |
+| `--accent` | `--grape2 #A78BFA` | |
+| `--destructive` | `--red #FF4D8D` (neon) | |
+| `--muted-foreground` | `--text2 #9999BB` | |
+| `--chart-1…5` | grape · gold · red · blue · cyan | brand accents reachable from shadcn |
+| `--font-sans` | `var(--font-tajawal)` | **one font** — Tajawal only |
+
+**RTL.** Verified under `<html dir="rtl">`. shadcn's `radix-nova` preset uses logical
+utilities (`ps-`/`pe-`, `start`/`end`) and Radix RTL-aware primitives, so no layout breaks.
+`components.json` has `rtl: true`; Sonner is set to `dir="rtl"`.
+
+**Proof.** `/ui-catalog` (`src/app/ui-catalog/page.tsx`) renders Button/Card/Dialog/Switch/
+Tooltip/Sonner on-brand, in RTL, with Arabic labels — a living "DESIGN.md as components".
+
+**Rules.** Keep one font (Tajawal). Don't re-introduce `next-themes` (app is always-dark).
+Don't recolor word-card state classes. When migrating a vanilla component to shadcn, map it
+to the tokens above rather than hardcoding colors.
+
+---
+
 ## 5. Layout Principles
 
 - **Spacing scale (rem):** `.2, .34, .4, .55, .65, .8, 1, 1.2, 1.4, 1.8` — tight in-game,
