@@ -5,12 +5,16 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/check-deps.mjs --fix",
     "dev": "tsx watch server/index.ts",
+    "prebuild": "node scripts/check-deps.mjs",
     "build": "next build && tsup",
     "start": "NODE_ENV=production node dist/index.js",
+    "pretest": "node scripts/check-deps.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
+    "verify:deps": "node scripts/check-deps.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

@@ -20,7 +20,20 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 });
 io.on("connection", (socket) => registerHandlers(io, socket));
 
-httpServer.listen(port, () => console.log(`🍇 تلميحة على المنفذ ${port}`));
+httpServer.listen(port, () => {
+  const mode = dev ? "التطوير" : "الإنتاج";
+  console.log(`\n🍇 تلميحة جاهزة — وضع ${mode} · المنفذ ${port}`);
+  console.log(`   http://localhost:${port}`);
+  // On the WSL /mnt mount inotify is unreliable, so file watchers often miss
+  // server edits — remind the developer to restart rather than chase stale code.
+  if (dev && process.cwd().startsWith("/mnt/")) {
+    console.log(
+      "   ⓘ على /mnt: إعادة التحميل التلقائي قد لا تعمل — أعد تشغيل npm run dev بعد تعديل ملفات الخادم.\n",
+    );
+  } else {
+    console.log("");
+  }
+});
 
 // Graceful shutdown: drain Socket.io and the HTTP server before exiting so that
 // rolling deploys (Railway/Render send SIGTERM) close connections cleanly.

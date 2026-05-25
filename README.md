@@ -99,6 +99,15 @@ npm run dev      # custom Next + Socket.io server (tsx watch) on http://localhos
 | `npm run test:cov` | Vitest with V8 coverage (80% thresholds on `src/lib`)                |
 | `npm run lint`     | ESLint flat config (`eslint .`)                                      |
 | `npm run typecheck`| `tsc --noEmit`                                                       |
+| `npm run verify:deps` | Smoke-test that critical deps actually resolve (see below)         |
+
+> **Dependency guard.** `npm run dev` first runs `scripts/check-deps.mjs` (the `predev`
+> hook). On the WSL `/mnt/d` mount npm sometimes extracts a package incompletely (e.g. it
+> can drop `node_modules/zod/v3/locales/en.js`), which would otherwise crash the dev server
+> on boot with a cryptic `ERR_MODULE_NOT_FOUND`. The guard detects this and **auto-repairs**
+> with a clean `npm ci`. `build`/`test` run the same check in detect-only mode, and it also
+> warns when `:3000` is already taken (a stale dev server silently serving old code). Run it
+> by hand any time with `npm run verify:deps`.
 
 ### Environment variables
 
