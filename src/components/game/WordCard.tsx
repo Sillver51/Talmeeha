@@ -1,8 +1,12 @@
 "use client";
 
-import type { MouseEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
 import type { PlayerView, Team, ViewCard } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
+
+const onKey = (e: KeyboardEvent, fn: () => void) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
+};
 
 /**
  * Single board cell — ports legacy `renderGame` board loop (~1138–1161).
@@ -94,10 +98,28 @@ export default function WordCard({
         }
       : undefined;
 
+  const isInteractive = onClick !== undefined;
+  const handleKeyDown = isInteractive
+    ? (e: KeyboardEvent<HTMLDivElement>) => {
+        onKey(e, () => {
+          // Synthesise a plain click (no modifier keys) for keyboard activation.
+          if (hostActionable) onGuess(index);
+          else if (guesserActionable) {
+            if (doubtMode) onToggleDoubt(index);
+            else onGuess(index);
+          }
+        });
+      }
+    : undefined;
+
   return (
     <div
       className={className}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={isInteractive ? card.w : undefined}
       style={style}
       title={hostActionable ? "انقر للتخمين | Shift+انقر للشك" : undefined}
     >

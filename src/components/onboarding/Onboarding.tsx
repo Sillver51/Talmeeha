@@ -48,7 +48,7 @@ export default function Onboarding() {
           لعبة الفرق والكلمات — القائد يعطي تلميحة، والفريق يخمّن. أول فريق يكشف كلماته يفوز.
         </p>
         <button ref={ctaRef} className="btn btn-gold w100" onClick={dismiss}>
-          العب الآن ←
+          العب الآن <bdi>←</bdi>
         </button>
       </div>
     </div>

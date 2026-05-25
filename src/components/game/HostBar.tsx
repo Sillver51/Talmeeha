@@ -38,7 +38,7 @@ export default function HostBar({ gphase }: HostBarProps) {
       <button
         className="btn btn-ghost btn-sm"
         onClick={() => useGameStore.setState({ clientScreen: "setup" })}
-        style={{ marginRight: "auto" }}
+        style={{ marginInlineEnd: "auto" }}
       >
         ⚙ الإعداد
       </button>

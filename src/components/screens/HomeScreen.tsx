@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { KeyboardEvent } from "react";
 import Logo from "@/components/brand/Logo";
 import { useGameStore } from "@/store/gameStore";
+
+const onKey = (e: KeyboardEvent, fn: () => void) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
+};
 
 /**
  * Home screen — ports legacy `#s-home` (public/index.html ~651–677).
@@ -39,7 +44,11 @@ export default function HomeScreen() {
           <div
             className={mode === "host" ? "mode-card selected" : "mode-card"}
             id="mc-host"
+            role="button"
+            tabIndex={0}
+            aria-pressed={mode === "host"}
             onClick={() => selectMode("host")}
+            onKeyDown={(e) => onKey(e, () => selectMode("host"))}
           >
             <span className="mode-icon">🖥️</span>
             <div className="mode-title">وضع المضيف</div>
@@ -48,7 +57,11 @@ export default function HomeScreen() {
           <div
             className={mode === "online" ? "mode-card selected" : "mode-card"}
             id="mc-online"
+            role="button"
+            tabIndex={0}
+            aria-pressed={mode === "online"}
             onClick={() => selectMode("online")}
+            onKeyDown={(e) => onKey(e, () => selectMode("online"))}
           >
             <span className="mode-icon">🌐</span>
             <div className="mode-title">وضع أونلاين</div>
@@ -108,7 +121,7 @@ export default function HomeScreen() {
               className="btn btn-outline"
               onClick={() => joinRoom(code, onlineName)}
             >
-              الانضمام ←
+              الانضمام <bdi>←</bdi>
             </button>
           </div>
         )}

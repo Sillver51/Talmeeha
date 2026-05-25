@@ -58,9 +58,7 @@ function TeamCard({ team, gs }: TeamCardProps) {
         borderRadius: "var(--r)",
         padding: ".8rem .65rem",
         textAlign: "center",
-        cursor: "pointer",
       }}
-      onClick={() => joinTeam(team)}
     >
       <div style={{ fontSize: "1.4rem", marginBottom: ".2rem" }}>
         {isRed ? "🔴" : "🔵"}
@@ -120,11 +118,16 @@ function TeamCard({ team, gs }: TeamCardProps) {
         })}
       </ul>
       <button
+        className="btn btn-sm btn-outline mt"
+        onClick={() => joinTeam(team)}
+        aria-label={`الانضمام إلى ${gs.teamNames[team]}`}
+      >
+        انضمّ
+      </button>
+      <button
         className={isRed ? "btn btn-sm btn-red mt" : "btn btn-sm btn-blue mt"}
-        onClick={(e) => {
-          e.stopPropagation();
-          becomeLeader(team);
-        }}
+        aria-label={`أصبح قائداً لـ ${gs.teamNames[team]}`}
+        onClick={() => becomeLeader(team)}
       >
         ⭐ قائداً
       </button>
