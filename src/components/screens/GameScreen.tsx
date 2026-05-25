@@ -9,6 +9,7 @@ import GameLog from "@/components/game/GameLog";
 import HostBar from "@/components/game/HostBar";
 import LeaderPanel from "@/components/game/LeaderPanel";
 import HandoffGate from "@/components/game/HandoffGate";
+import TurnTimer from "@/components/game/TurnTimer";
 import CoachMarks from "@/components/onboarding/CoachMarks";
 import { hGuesser, hLeader, myRole, myTurn } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
@@ -55,6 +56,10 @@ export default function GameScreen() {
         winsRed={winsData.red || 0}
         winsBlue={winsData.blue || 0}
       />
+
+      {playing && gs.turnDeadlineAt != null && (
+        <TurnTimer deadlineAt={gs.turnDeadlineAt} durationMs={gs.timer?.durationMs} />
+      )}
 
       {isHost && <HostBar gphase={gs.gphase} />}
       {isHost && !gs.gphase && playing && <HandoffGate gs={gs} />}

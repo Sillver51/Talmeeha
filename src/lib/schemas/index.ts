@@ -22,3 +22,7 @@ export const guessCardSchema = z.object({ code, index: z.number().int().min(0).m
 export const toggleDoubtSchema = z.object({ code, index: z.number().int().min(0).max(24) });
 export const endTurnSchema = z.object({ code });
 export const restartSchema = z.object({ code });
+export const setTimerSchema = z.object({
+  code,
+  preset: z.enum(["relaxed", "normal", "blitz", "off"]),
+});

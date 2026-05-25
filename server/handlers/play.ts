@@ -7,8 +7,9 @@ import {
   toggleDoubtSchema,
   endTurnSchema,
 } from "@/lib/schemas";
-import { submitClue, resolveGuess, toggleDoubt, nextTurn } from "@/lib/game";
+import { addLog, submitClue, resolveGuess, toggleDoubt, nextTurn } from "@/lib/game";
 import { broadcastState } from "../emit";
+import { armTurnDeadline } from "../timers";
 import { hLeader, hGuesser, rotateGuesser } from "./hostNames";
 
 // Ports the four play events from server.js (submit_clue 189-203, guess_card 206-248,
@@ -78,6 +79,11 @@ export function registerPlayHandlers(
     }
 
     store.set(code, next);
+    // Re-arm only when the turn changed or the game ended; a correct guess that keeps the
+    // same turn must NOT reset the per-turn clock. armTurnDeadline cancels if game ended/not playing.
+    if (next.turn !== wasTurn || next.phase !== "playing") {
+      armTurnDeadline(io, code);
+    }
     void broadcastState(io, code);
   });
 
@@ -119,9 +125,10 @@ export function registerPlayHandlers(
       room.leaders[room.turn] !== socket.id;
     if (!isHost && !isGuesser) return;
 
-    const next = nextTurn({ ...room, log: ["⏭ انتهى الدور", ...room.log] });
+    const next = nextTurn({ ...room, log: addLog(room.log, "⏭ انتهى الدور") });
 
     store.set(code, next);
+    armTurnDeadline(io, code); // a manual end always flips the turn → re-arm for the new team
     void broadcastState(io, code);
   });
 }

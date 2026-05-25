@@ -6,6 +6,7 @@ import type {
   ServerToClientEvents,
   Team,
 } from "@/lib/types";
+import type { TimerPreset } from "@/lib/game";
 
 type Mode = "host" | "online";
 /**
@@ -73,6 +74,7 @@ interface GameStore {
   guessCard(i: number): void;
   toggleDoubt(i: number): void;
   endTurn(): void;
+  setTimer(preset: TimerPreset | "off"): void;
   restart(): void;
   goHome(): void;
   toggleDoubtMode(): void;
@@ -381,6 +383,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { socket, roomCode } = get();
     if (!socket || !roomCode) return;
     socket.emit("end_turn", { code: roomCode });
+  },
+
+  setTimer(preset) {
+    const { socket, roomCode } = get();
+    if (!socket || !roomCode) return;
+    socket.emit("set_timer", { code: roomCode, preset });
   },
 
   restart() {

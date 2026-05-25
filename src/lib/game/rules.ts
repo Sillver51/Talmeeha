@@ -5,7 +5,7 @@ import { checkWin, remaining } from "./win";
 export type GuessOutcome = "hit" | "miss" | "assassin" | "win" | "noop";
 
 const LOG_CAP = 50;
-function addLog(log: readonly string[], line: string): string[] {
+export function addLog(log: readonly string[], line: string): string[] {
   return [line, ...log].slice(0, LOG_CAP);
 }
 

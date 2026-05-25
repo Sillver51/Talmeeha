@@ -1,8 +1,11 @@
 "use client";
 
 import type { PlayerView, Team } from "@/lib/types";
+import type { TimerPreset } from "@/lib/game";
+import { PRESETS } from "@/lib/game";
 import { useGameStore } from "@/store/gameStore";
 import RoomShare from "@/components/share/RoomShare";
+import { Button } from "@/components/ui/button";
 
 /**
  * Lobby screen (online mode) — ports legacy `#s-lobby` (~721–755) +
@@ -124,6 +127,82 @@ function TeamCard({ team, gs }: TeamCardProps) {
   );
 }
 
+const OPTIONS: { value: TimerPreset | "off"; label: string }[] = [
+  { value: "off", label: "إيقاف" },
+  { value: "relaxed", label: PRESETS.relaxed.label },
+  { value: "normal", label: PRESETS.normal.label },
+  { value: "blitz", label: PRESETS.blitz.label },
+];
+
+interface TimerPickerProps {
+  gs: PlayerView;
+}
+
+function TimerPicker({ gs }: TimerPickerProps) {
+  const myId = useGameStore((s) => s.myId);
+  const setTimer = useGameStore((s) => s.setTimer);
+
+  const isLeader =
+    !!myId && (gs.leaders.red === myId || gs.leaders.blue === myId);
+  const current: TimerPreset | "off" =
+    gs.timer?.enabled ? gs.timer.preset : "off";
+
+  return (
+    <div
+      style={{
+        margin: ".7rem 0",
+        padding: ".65rem .8rem",
+        borderRadius: "var(--r)",
+        background: "var(--glass)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <div
+        className="muted"
+        style={{
+          fontSize: ".72rem",
+          fontWeight: 700,
+          marginBottom: ".5rem",
+          textAlign: "center",
+        }}
+      >
+        <span aria-hidden="true">⏱️</span> مؤقّت الدور
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: ".35rem",
+          justifyContent: "center",
+        }}
+      >
+        {OPTIONS.map((opt) => (
+          <Button
+            key={opt.value}
+            variant={current === opt.value ? "default" : "outline"}
+            size="sm"
+            disabled={!isLeader}
+            onClick={() => setTimer(opt.value)}
+            aria-describedby={!isLeader ? "timer-leader-hint" : undefined}
+            style={{ fontWeight: 800, ...(current !== opt.value ? { opacity: isLeader ? 1 : 0.6 } : {}) }}
+          >
+            {opt.label}
+          </Button>
+        ))}
+      </div>
+      {!isLeader && (
+        <div
+          id="timer-leader-hint"
+          className="muted"
+          style={{ fontSize: ".65rem", textAlign: "center", marginTop: ".4rem" }}
+        >
+          القائد فقط يضبط المؤقّت
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LobbyScreen() {
   const gs = useGameStore((s) => s.gs);
   const startGame = useGameStore((s) => s.startGame);
@@ -167,6 +246,7 @@ export default function LobbyScreen() {
         <div className="muted tc" id="spec-row" style={{ marginBottom: ".7rem" }}>
           {specNames.length ? `👁 ${specNames.join("، ")}` : ""}
         </div>
+        <TimerPicker gs={gs} />
         <div className="divider"></div>
         <button
           className="btn btn-gold"
