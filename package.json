@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch server/index.ts",
-    "build": "next build",
-    "start": "NODE_ENV=production tsx server/index.ts",
+    "build": "next build && tsup",
+    "start": "NODE_ENV=production node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -40,9 +40,12 @@
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^2.1.8",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
     "postcss": "^8.5.15",
     "sharp": "^0.33.5",
     "tailwindcss": "^4.3.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.6.3",
     "vitest": "^2.1.8"
   },

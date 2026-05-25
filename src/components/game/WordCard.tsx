@@ -38,7 +38,6 @@ export default function WordCard({
   index,
   role,
   myId,
-  myTeam,
   isMyTurn,
   gphase,
   phase,
