@@ -1,6 +1,7 @@
 "use client";
 
 import { useGameStore } from "@/store/gameStore";
+import { Button } from "@/components/ui/button";
 
 /**
  * Host control bar (`.host-bar`) — ports legacy markup (~773–778) + visibility
@@ -20,28 +21,31 @@ export default function HostBar({ gphase }: HostBarProps) {
     <div className="host-bar" id="host-bar" style={{ display: "flex" }}>
       <span className="host-bar-label">🎛 تحكم:</span>
       {gphase && (
-        <button
-          className="btn btn-danger btn-sm"
+        <Button
+          variant="danger"
+          size="sm"
           id="hb-end-turn"
           onClick={endTurn}
         >
           ⏭ إنهاء الدور
-        </button>
+        </Button>
       )}
-      <button
-        className="btn btn-ghost btn-sm"
+      <Button
+        variant="ghost"
+        size="sm"
         id="hb-toggle-view"
         onClick={toggleHostView}
       >
         {hostViewLeader ? "🙈 إخفاء" : "👁 عرض القائد"}
-      </button>
-      <button
-        className="btn btn-ghost btn-sm"
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => useGameStore.setState({ clientScreen: "setup" })}
         style={{ marginInlineEnd: "auto" }}
       >
         ⚙ الإعداد
-      </button>
+      </Button>
     </div>
   );
 }

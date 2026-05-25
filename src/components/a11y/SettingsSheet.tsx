@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePrefsStore } from "@/store/prefsStore";
 import InstallButton from "@/components/pwa/InstallButton";
+import { Button } from "@/components/ui/button";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -42,14 +43,15 @@ export default function SettingsSheet({ open, onClose }: SettingsSheetProps) {
       <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="settings-head">
           <span className="settings-title">⚙ الإعدادات</span>
-          <button
+          <Button
             ref={closeRef}
-            className="btn btn-ghost btn-sm"
+            variant="ghost"
+            size="sm"
             onClick={onClose}
             aria-label="إغلاق"
           >
             ✕
-          </button>
+          </Button>
         </div>
 
         <div className="settings-row">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { KeyboardEvent } from "react";
 import Logo from "@/components/brand/Logo";
 import { useGameStore } from "@/store/gameStore";
+import { Button } from "@/components/ui/button";
 
 const onKey = (e: KeyboardEvent, fn: () => void) => {
   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
@@ -82,12 +83,13 @@ export default function HomeScreen() {
                 if (e.key === "Enter") startHostSetup(hostName);
               }}
             />
-            <button
-              className="btn btn-gold"
+            <Button
+              variant="gold"
+              className="w-full"
               onClick={() => startHostSetup(hostName)}
             >
               ✦ إعداد اللعبة
-            </button>
+            </Button>
           </div>
         ) : (
           <div id="online-form">
@@ -99,12 +101,13 @@ export default function HomeScreen() {
               value={onlineName}
               onChange={(e) => setOnlineName(e.target.value)}
             />
-            <button
-              className="btn btn-gold"
+            <Button
+              variant="gold"
+              className="w-full"
               onClick={() => createRoom(onlineName)}
             >
               📋 إنشاء غرفة
-            </button>
+            </Button>
             <div className="divider"></div>
             <input
               type="text"
@@ -117,12 +120,13 @@ export default function HomeScreen() {
                 if (e.key === "Enter") joinRoom(code, onlineName);
               }}
             />
-            <button
-              className="btn btn-outline"
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={() => joinRoom(code, onlineName)}
             >
               الانضمام <bdi>←</bdi>
-            </button>
+            </Button>
           </div>
         )}
       </div>

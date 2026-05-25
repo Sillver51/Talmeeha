@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatDigits } from "@/lib/i18n/digits";
 import { useGameStore } from "@/store/gameStore";
+import { Button } from "@/components/ui/button";
 
 interface RoomShareProps {
   code: string;
@@ -39,9 +40,9 @@ export default function RoomShare({ code }: RoomShareProps) {
       <div className="room-qr" aria-hidden="true">
         <QRCodeSVG value={joinUrl} size={132} bgColor="transparent" fgColor="#EAEAFF" level="M" />
       </div>
-      <button className="btn btn-outline w100" onClick={share}>
+      <Button variant="outline" className="w-full" onClick={share}>
         🔗 مشاركة الرابط
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useGameStore } from "@/store/gameStore";
+import { Button } from "@/components/ui/button";
 
 /**
  * Recovery modal shown when a reconnect's `rejoin` fails (room gone / server
@@ -19,9 +20,9 @@ export default function RoomLostModal() {
         </div>
         <h2 id="room-lost-title">انقطع الاتصال بالغرفة</h2>
         <p className="muted" style={{ fontWeight: 600 }}>انتهت الجلسة أو أُغلقت الغرفة. يمكنك العودة والبدء من جديد.</p>
-        <button className="btn btn-gold" onClick={goHome} autoFocus>
+        <Button variant="gold" className="w-full" onClick={goHome} autoFocus>
           العودة للرئيسية
-        </button>
+        </Button>
       </div>
     </div>
   );

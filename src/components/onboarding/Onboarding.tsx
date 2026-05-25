@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const SEEN_KEY = "talmeeha_onboarded";
 
@@ -47,9 +48,9 @@ export default function Onboarding() {
         <p className="onboard-lead">
           لعبة الفرق والكلمات — القائد يعطي تلميحة، والفريق يخمّن. أول فريق يكشف كلماته يفوز.
         </p>
-        <button ref={ctaRef} className="btn btn-gold w100" onClick={dismiss}>
+        <Button ref={ctaRef} variant="gold" className="w-full" onClick={dismiss}>
           العب الآن <bdi>←</bdi>
-        </button>
+        </Button>
       </div>
     </div>
   );
