@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     // suppressHydrationWarning: browser extensions inject attributes (e.g. crxemulator)
     // onto <html> before React hydrates; this scopes the suppression to this element only.
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={tajawal.variable}>
       <body className={tajawal.variable}>{children}</body>
     </html>
   );
