@@ -3,6 +3,7 @@
 import { useGameStore } from "@/store/gameStore";
 import { hLeader } from "@/lib/ui/roles";
 import TeamGlyph from "@/components/brand/TeamGlyph";
+import { Button } from "@/components/ui/button";
 import type { PlayerView } from "@/lib/types";
 
 interface HandoffGateProps {
@@ -26,8 +27,10 @@ export default function HandoffGate({ gs }: HandoffGateProps) {
       <span className="handoff-label">
         مرّر الجهاز إلى القائد <TeamGlyph team={gs.turn} /> {hLeader(gs)}
       </span>
-      <button
-        className={peeking ? "btn btn-gold btn-sm peeking" : "btn btn-gold btn-sm"}
+      <Button
+        variant="gold"
+        size="sm"
+        className={peeking ? "peeking" : undefined}
         aria-label="اضغط مطوّلاً (أو مفتاح المسافة) لرؤية المفتاح"
         onPointerDown={show}
         onPointerUp={hide}
@@ -46,7 +49,7 @@ export default function HandoffGate({ gs }: HandoffGateProps) {
         onContextMenu={(e) => e.preventDefault()}
       >
         {peeking ? "👁 المفتاح ظاهر" : "اضغط مطوّلاً لرؤية المفتاح"}
-      </button>
+      </Button>
     </div>
   );
 }
