@@ -27,7 +27,7 @@ const buttonVariants = cva(
         red: "bg-[var(--red)] text-white hover:bg-[var(--red2)]",
         blue: "bg-[var(--blue)] text-white hover:bg-[var(--blue2)]",
         doubt:
-          "border-[rgba(168,85,247,0.3)] bg-[var(--doubt-dim)] text-[var(--doubt2)] hover:bg-[rgba(168,85,247,0.26)]",
+          "border-[rgba(168,85,247,0.3)] bg-[var(--doubt-dim)] text-[var(--doubt2)] hover:bg-[rgba(168,85,247,0.26)] aria-pressed:bg-[rgba(168,85,247,0.32)] aria-pressed:text-white aria-pressed:border-[var(--purple)]",
         danger:
           "border-[rgba(240,64,96,0.28)] bg-[rgba(240,64,96,0.14)] text-[var(--red2)] hover:bg-[rgba(240,64,96,0.2)]",
       },
