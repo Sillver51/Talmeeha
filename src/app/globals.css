@@ -554,6 +554,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   border-radius:var(--r);
   padding:8px;
   backdrop-filter:blur(8px);
+  perspective:1000px;            /* 3D depth for card flips */
 }
 @media(max-width:520px){.board{grid-template-columns:repeat(4,1fr);gap:5px;padding:6px;}}
 @media(max-width:360px){.board{grid-template-columns:repeat(3,1fr);gap:4px;}}
@@ -573,7 +574,12 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   user-select:none;line-height:1.2;
   position:relative;overflow:hidden;
-  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  transition:
+    transform calc(var(--dur-fast) * var(--motion-scale)) var(--ease-spring),
+    box-shadow .2s var(--ease-spring),
+    background .2s var(--ease-spring),
+    border-color .2s var(--ease-spring);
+  transform-style:preserve-3d;
   cursor:pointer;
   box-shadow:
     0 4px 14px rgba(0,0,0,.45),
@@ -591,7 +597,8 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   box-shadow:0 10px 28px rgba(0,0,0,.55), 0 0 0 1px var(--glass-brd) inset;
   background:rgba(255,255,255,.08);
 }
-.wc:active:not(.rv){transform:translateY(-1px) scale(1.01);}
+/* press feedback — tactile squash, springs back via .wc transition */
+.wc:active:not(.rv){transform:scale(.94);}
 .wc.rv{cursor:default;transform:none;box-shadow:0 2px 8px rgba(0,0,0,.3);}
 .wc.rv::after{display:none;}
 
@@ -881,9 +888,66 @@ html[data-reduced-motion="on"]{ --motion-scale: 0; }
   display:flex;align-items:center;justify-content:center;
 }
 
-/* ─── FLIP-REVEAL (fires once on a freshly revealed tile) ─── */
-@keyframes wcFlip{ 0%{transform:rotateY(90deg);opacity:.35;} 100%{transform:rotateY(0);opacity:1;} }
-.wc.rv{ animation:wcFlip .32s cubic-bezier(.34,1.56,.64,1); }
+/* ─── BOARD MOUNT STAGGER (cascades the 25 tiles in on board mount) ───
+   Pure CSS: each tile fades + rises + settles, with a per-tile delay
+   stepped via :nth-child(). Tiles use stable React keys, so the DOM
+   nodes persist across re-renders — this animation fires once when the
+   .board first mounts (game start) and does NOT replay on card reveals.
+   Duration AND delay are scaled by --motion-scale, so reduced-motion
+   collapses both to 0 = instant, no stagger. */
+@keyframes tileIn{
+  from{ opacity:0; transform: translateY(calc(10px * var(--motion-scale))) scale(calc(1 - .06 * var(--motion-scale))); }
+  to  { opacity:1; transform: none; }
+}
+.board > *{
+  animation: tileIn calc(var(--dur-base) * var(--motion-scale)) var(--ease-out) both;
+}
+/* ~22ms steps, grouped to stay compact; capped so the last tile (25)
+   lands by ~0.4s. Delays scaled by --motion-scale → 0 under reduced-motion. */
+.board > *:nth-child(1){  animation-delay: calc(0ms   * var(--motion-scale)); }
+.board > *:nth-child(2){  animation-delay: calc(22ms  * var(--motion-scale)); }
+.board > *:nth-child(3){  animation-delay: calc(44ms  * var(--motion-scale)); }
+.board > *:nth-child(4){  animation-delay: calc(66ms  * var(--motion-scale)); }
+.board > *:nth-child(5){  animation-delay: calc(88ms  * var(--motion-scale)); }
+.board > *:nth-child(6){  animation-delay: calc(110ms * var(--motion-scale)); }
+.board > *:nth-child(7){  animation-delay: calc(132ms * var(--motion-scale)); }
+.board > *:nth-child(8){  animation-delay: calc(154ms * var(--motion-scale)); }
+.board > *:nth-child(9){  animation-delay: calc(176ms * var(--motion-scale)); }
+.board > *:nth-child(10){ animation-delay: calc(198ms * var(--motion-scale)); }
+.board > *:nth-child(11){ animation-delay: calc(220ms * var(--motion-scale)); }
+.board > *:nth-child(12){ animation-delay: calc(242ms * var(--motion-scale)); }
+.board > *:nth-child(13){ animation-delay: calc(264ms * var(--motion-scale)); }
+.board > *:nth-child(14){ animation-delay: calc(286ms * var(--motion-scale)); }
+.board > *:nth-child(15){ animation-delay: calc(308ms * var(--motion-scale)); }
+.board > *:nth-child(16){ animation-delay: calc(330ms * var(--motion-scale)); }
+.board > *:nth-child(17){ animation-delay: calc(352ms * var(--motion-scale)); }
+.board > *:nth-child(18){ animation-delay: calc(374ms * var(--motion-scale)); }
+.board > *:nth-child(n+19){ animation-delay: calc(396ms * var(--motion-scale)); }
+
+/* ─── FLIP-REVEAL (fires once on a freshly revealed tile) ───
+   True 3D Y-axis flip with a spring overshoot + mid-flip squash pop.
+   GPU-friendly: transform + opacity only. Duration is scaled by
+   --motion-scale so reduced-motion (0) collapses it to an instant
+   reveal with no flip. The revealed face reads clearly at rest. */
+@keyframes flip3d{
+  0%{   transform:rotateY(-90deg) scale(.92); opacity:.4; }
+  55%{  transform:rotateY(8deg)   scale(1.06); opacity:1; }
+  100%{ transform:rotateY(0)      scale(1);    opacity:1; }
+}
+.wc.rv{
+  animation:
+    flip3d      calc(var(--dur-base) * var(--motion-scale)) var(--ease-spring),
+    revealGlow  calc(var(--dur-slow) * var(--motion-scale)) var(--ease-out);
+  transform-origin:center;
+}
+/* subtle one-shot glow that blooms then settles as the tile lands
+   (Liquid Night). Uses filter (rv color rules use box-shadow), so it
+   leaves no resting state to conflict with. Gated by --motion-scale. */
+@keyframes revealGlow{
+  0%{   filter: brightness(1.18) drop-shadow(0 0 10px rgba(255,255,255,.35)); }
+  60%{  filter: brightness(1.06) drop-shadow(0 0 5px rgba(255,255,255,.14)); }
+  100%{ filter: none; }
+}
 
 /* ─── WIN CONFETTI ─── */
 .confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:5;}
@@ -899,6 +963,7 @@ html[data-reduced-motion="on"] .confetti{display:none;}
    "system" default does not set data-reduced-motion="on"). */
 @media (prefers-reduced-motion: reduce){
   .wc.rv,
+  .board > *,
   .clue-word-big,
   .btn-gold,
   .current-player-badge{
