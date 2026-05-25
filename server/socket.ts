@@ -6,6 +6,7 @@ import { registerTeamHandlers } from "./handlers/teams";
 import { registerPlayHandlers } from "./handlers/play";
 import { registerLifecycleHandlers } from "./handlers/lifecycle";
 import { registerReconnectHandlers } from "./handlers/reconnect";
+import { registerTimerHandlers } from "./handlers/timer";
 
 export function registerHandlers(
   io: Server<ClientToServerEvents, ServerToClientEvents>,
@@ -17,4 +18,5 @@ export function registerHandlers(
   registerTeamHandlers(io, socket);
   registerPlayHandlers(io, socket);
   registerLifecycleHandlers(io, socket);
+  registerTimerHandlers(io, socket);
 }

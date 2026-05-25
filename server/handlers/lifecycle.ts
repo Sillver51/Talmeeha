@@ -3,6 +3,7 @@ import type { ClientToServerEvents, GameState, ServerToClientEvents, Team } from
 import { store } from "../rooms";
 import { broadcastState } from "../emit";
 import { scheduleRemoval } from "../presence";
+import { armTurnDeadline, cancelTurnDeadline } from "../timers";
 import { startGameSchema, restartSchema } from "@/lib/schemas";
 import { buildBoard, remaining } from "@/lib/game";
 import { WORDS } from "@/lib/words";
@@ -48,6 +49,7 @@ export function registerLifecycleHandlers(
     };
 
     store.set(code, next);
+    armTurnDeadline(io, code); // sets turnDeadlineAt + schedules if the room's timer is enabled
     void broadcastState(io, code);
   });
 
@@ -77,6 +79,7 @@ export function registerLifecycleHandlers(
         };
 
     store.set(code, next);
+    cancelTurnDeadline(code); // game reset → no active turn
     void broadcastState(io, code);
   });
 
@@ -85,6 +88,7 @@ export function registerLifecycleHandlers(
     for (const [code, room] of [...store.all()]) {
       // Host-mode room is torn down when its host leaves (legacy parity).
       if (room.hostMode && room.hostSocketId === socket.id) {
+        cancelTurnDeadline(code);
         store.delete(code);
         continue;
       }
@@ -120,6 +124,7 @@ export function registerLifecycleHandlers(
         };
 
         if (Object.keys(players).length === 0) {
+          cancelTurnDeadline(code);
           store.delete(code);
           return;
         }
