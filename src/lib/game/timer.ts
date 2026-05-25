@@ -6,17 +6,17 @@ export interface TimerConfig {
   durationMs: number;
 }
 
-export const PRESETS: Record<TimerPreset, { durationMs: number; label: string }> = {
+export const PRESETS = {
   relaxed: { durationMs: 90000, label: "مريح" },
   normal: { durationMs: 60000, label: "عادي" },
   blitz: { durationMs: 30000, label: "سريع" },
-};
+} as const satisfies Record<TimerPreset, { durationMs: number; label: string }>;
 
-export const DEFAULT_TIMER: TimerConfig = {
+export const DEFAULT_TIMER: Readonly<TimerConfig> = {
   enabled: false,
   preset: "normal",
   durationMs: 60000,
-};
+} as const;
 
 export function applyTurnDeadline<R extends { timer?: TimerConfig }>(
   room: R,

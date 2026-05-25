@@ -19,10 +19,10 @@ describe("PRESETS", () => {
     expect(PRESETS.blitz.durationMs).toBe(30000);
   });
 
-  it("all presets have label strings", () => {
-    expect(typeof PRESETS.normal.label).toBe("string");
-    expect(typeof PRESETS.relaxed.label).toBe("string");
-    expect(typeof PRESETS.blitz.label).toBe("string");
+  it("all presets have exact Arabic labels", () => {
+    expect(PRESETS.relaxed.label).toBe("مريح");
+    expect(PRESETS.normal.label).toBe("عادي");
+    expect(PRESETS.blitz.label).toBe("سريع");
   });
 });
 
@@ -101,5 +101,13 @@ describe("clearTurnDeadline", () => {
   it("returns a new object (not same reference)", () => {
     const room: { turnDeadlineAt: number | null } = { turnDeadlineAt: 1 };
     expect(clearTurnDeadline(room)).not.toBe(room);
+  });
+
+  it("clearTurnDeadline preserves other room fields", () => {
+    const room = { timer: DEFAULT_TIMER, turnDeadlineAt: 99999 as number | null, turn: "red" as const };
+    const out = clearTurnDeadline(room);
+    expect(out.turnDeadlineAt).toBeNull();
+    expect(out.turn).toBe("red");
+    expect(out.timer).toBe(DEFAULT_TIMER);
   });
 });

@@ -8,7 +8,7 @@ export interface SuddenDeathRoom {
   /** Set by the server when the phase ended due to the clock running out. */
   endedOnClock?: boolean;
   /** Optional per-team wrong-guess tally; defaults to 0/0 when absent. */
-  wrongGuesses?: Record<Team, number>;
+  wrongGuesses?: Partial<Record<Team, number>>;
 }
 
 const opponent = (t: Team): Team => (t === "red" ? "blue" : "red");
