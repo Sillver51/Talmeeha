@@ -112,7 +112,9 @@ function TeamCard({ team, gs }: TeamCardProps) {
                   قائد
                 </span>
               )}
-              {isDisconnected && <span className="disc-badge">انقطع</span>}
+              {isDisconnected && (
+                <span className="disc-badge"><span aria-hidden="true">انقطع</span><span className="sr-only"> — انقطع الاتصال</span></span>
+              )}
             </li>
           );
         })}

@@ -12,14 +12,14 @@ export default function RoomLostModal() {
   const goHome = useGameStore((s) => s.goHome);
   if (!roomLost) return null;
   return (
-    <div className="modal-wrap" role="dialog" aria-modal="true" aria-label="انقطع الاتصال بالغرفة">
+    <div className="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="room-lost-title">
       <div className="modal">
-        <div style={{ fontSize: "2rem", marginBottom: ".5rem" }} aria-hidden="true">
+        <div style={{ fontSize: "2rem", marginBlockEnd: ".5rem" }} aria-hidden="true">
           🔌
         </div>
-        <h2>انقطع الاتصال بالغرفة</h2>
-        <p className="muted">انتهت الجلسة أو أُغلقت الغرفة. يمكنك العودة والبدء من جديد.</p>
-        <button className="btn btn-gold" onClick={goHome}>
+        <h2 id="room-lost-title">انقطع الاتصال بالغرفة</h2>
+        <p className="muted" style={{ fontWeight: 600 }}>انتهت الجلسة أو أُغلقت الغرفة. يمكنك العودة والبدء من جديد.</p>
+        <button className="btn btn-gold" onClick={goHome} autoFocus>
           العودة للرئيسية
         </button>
       </div>

@@ -2,8 +2,11 @@ import { describe, it, expect } from "vitest";
 import { bannerForStatus } from "@/components/system/ConnectionBanner";
 
 describe("bannerForStatus", () => {
-  it("shows nothing while connecting", () => {
-    expect(bannerForStatus("connecting")).toBeNull();
+  it("shows a warn banner with Arabic copy while connecting", () => {
+    const info = bannerForStatus("connecting");
+    expect(info).not.toBeNull();
+    expect(info?.tone).toBe("warn");
+    expect(info?.text.trim().length).toBeGreaterThan(0);
   });
 
   it("shows nothing while online", () => {

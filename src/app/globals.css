@@ -1206,7 +1206,7 @@ html[data-reduced-motion="on"] .confetti{display:none;}
 /* Tiny muted pill marking a player whose socket dropped (within grace window). */
 .disc-badge{
   background:var(--surface3);
-  color:var(--text2);
+  color:var(--text);
   font-size:.52rem;
   font-weight:900;
   padding:.07rem .28rem;
