@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "@/components/brand/Logo";
 import { useGameStore } from "@/store/gameStore";
 
@@ -15,10 +15,20 @@ export default function HomeScreen() {
   const startHostSetup = useGameStore((s) => s.startHostSetup);
   const createRoom = useGameStore((s) => s.createRoom);
   const joinRoom = useGameStore((s) => s.joinRoom);
+  const pendingJoinCode = useGameStore((s) => s.pendingJoinCode);
+  const setPendingJoinCode = useGameStore((s) => s.setPendingJoinCode);
 
   const [hostName, setHostName] = useState("");
   const [onlineName, setOnlineName] = useState("");
   const [code, setCode] = useState("");
+
+  // Pre-fill the join code once when a deep-link (/?room=1234) supplies it.
+  useEffect(() => {
+    if (pendingJoinCode) {
+      setCode(pendingJoinCode);
+      setPendingJoinCode(null);
+    }
+  }, [pendingJoinCode, setPendingJoinCode]);
 
   return (
     <div className="screen on" id="s-home">

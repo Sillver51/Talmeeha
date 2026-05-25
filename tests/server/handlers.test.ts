@@ -179,3 +179,54 @@ describe("role-filtered state (security regression)", () => {
     [host, guest, redMember, blueMember].forEach((s) => s.close());
   });
 });
+
+describe("reconnection", () => {
+  it("rejoin within the grace window keeps the player on their team", async () => {
+    const a = connect();
+    a.emit("create_online", { name: "A" });
+    const ja = await nextJoined(a);
+    const code = ja.code;
+
+    const b = connect();
+    b.emit("join_online", { code, name: "B" });
+    const jb = await nextJoined(b);
+    b.emit("select_team", { code, team: "red" });
+    await waitForState(a, (st) => st.teams.red.includes(jb.myId));
+
+    const oldId = jb.myId;
+    b.close();
+    // server marks B disconnected (grace timer running, not yet removed)
+    await waitForState(a, (st) => st.players[oldId]?.disconnected === true);
+
+    const b2 = connect();
+    b2.emit("rejoin", { code, playerId: oldId, name: "B" });
+    const jb2 = await nextJoined(b2);
+
+    const st = await waitForState(a, (s) => s.teams.red.includes(jb2.myId));
+    expect(st.players[jb2.myId]?.team).toBe("red");
+    expect(st.players[jb2.myId]?.disconnected).toBeFalsy();
+    expect(st.teams.red).not.toContain(oldId);
+
+    [a, b2].forEach((s) => s.close());
+  });
+
+  it("rejects rejoin onto an active (connected) seat (anti-hijack)", async () => {
+    const a = connect();
+    a.emit("create_online", { name: "A" });
+    const ja = await nextJoined(a);
+    const code = ja.code;
+
+    const b = connect();
+    b.emit("join_online", { code, name: "B" });
+    const jb = await nextJoined(b);
+    await waitForState(a, (st) => Boolean(st.players[jb.myId]));
+
+    // An attacker learns B's id from the shared room state, but B is still connected.
+    const x = connect();
+    x.emit("rejoin", { code, playerId: jb.myId, name: "X" });
+    const err = await new Promise<string>((res) => x.once("error", res));
+    expect(typeof err).toBe("string");
+
+    [a, b, x].forEach((s) => s.close());
+  });
+});

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import PrefsEffect from "@/components/a11y/PrefsEffect";
 import SettingsSheet from "@/components/a11y/SettingsSheet";
+import Onboarding from "@/components/onboarding/Onboarding";
+import PwaRegister from "@/components/pwa/PwaRegister";
 import Toast from "@/components/brand/Toast";
 import GameScreen from "@/components/screens/GameScreen";
 import HomeScreen from "@/components/screens/HomeScreen";
@@ -22,15 +24,25 @@ export default function Home() {
   const connect = useGameStore((s) => s.connect);
   const gs = useGameStore((s) => s.gs);
   const clientScreen = useGameStore((s) => s.clientScreen);
+  const selectMode = useGameStore((s) => s.selectMode);
+  const setPendingJoinCode = useGameStore((s) => s.setPendingJoinCode);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     connect();
-  }, [connect]);
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get("room");
+    if (room && /^\d{4}$/.test(room)) {
+      selectMode("online");
+      setPendingJoinCode(room);
+    }
+  }, [connect, selectMode, setPendingJoinCode]);
 
   return (
     <>
       <PrefsEffect />
+      <PwaRegister />
+      <Onboarding />
       <button
         className="settings-gear"
         aria-label="الإعدادات"

@@ -18,7 +18,7 @@ export interface PlayerView extends Omit<GameState, "board"> {
 }
 
 export interface Card { w: string; t: CardType; rv: boolean; }
-export interface Player { id: string; name: string; team: Team | null; }
+export interface Player { id: string; name: string; team: Team | null; disconnected?: boolean; }
 export interface Clue { w: string; n: number; }
 export interface HostTeam { players: string[]; leader: string; gIdx: number; }
 
@@ -58,6 +58,7 @@ export interface ClientToServerEvents {
   create_host: (p: CreateHostPayload) => void;
   create_online: (p: { name: string }) => void;
   join_online: (p: { code: string; name: string }) => void;
+  rejoin: (p: { code: string; playerId: string; name: string }) => void;
   select_team: (p: { code: string; team: Team }) => void;
   become_leader: (p: { code: string; team: Team }) => void;
   start_game: (p: { code: string }) => void;

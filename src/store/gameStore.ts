@@ -44,11 +44,13 @@ interface GameStore {
   roomCode: string | null;
   isHost: boolean;
   gs: PlayerView | null;
+  pendingJoinCode: string | null;
   // local UI
   mode: Mode;
   clientScreen: ClientScreen;
   doubtMode: boolean;
   hostViewLeader: boolean;
+  peeking: boolean;
   toastMsg: string | null;
   winsData: WinsData;
   hSetup: { red: HostTeamSetup; blue: HostTeamSetup };
@@ -56,6 +58,7 @@ interface GameStore {
   connect(): void;
   // actions
   selectMode(m: Mode): void;
+  setPendingJoinCode(code: string | null): void;
   startHostSetup(name: string): void;
   addPlayer(t: Team, name: string): void;
   removePlayer(t: Team, name: string): void;
@@ -74,6 +77,7 @@ interface GameStore {
   goHome(): void;
   toggleDoubtMode(): void;
   toggleHostView(): void;
+  setPeeking(on: boolean): void;
   toast(msg: string): void;
   resetWins(): void;
 }
@@ -140,10 +144,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   roomCode: null,
   isHost: false,
   gs: null,
+  pendingJoinCode: null,
   mode: "host",
   clientScreen: "home",
   doubtMode: false,
   hostViewLeader: false,
+  peeking: false,
   toastMsg: null,
   winsData: DEFAULT_WINS,
   hSetup: emptyHostSetup(),
@@ -152,6 +158,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
   connect() {
     if (get().socket) return;
     const socket: GameSocket = io();
+
+    // On every (re)connect: if we already hold a room seat, ask the server to restore it.
+    // First connect is a no-op (roomCode/myId are null). After a network drop, the store
+    // still holds the prior code + playerId, so the server remaps us to the new socket id.
+    socket.on("connect", () => {
+      const { roomCode, myId, myName } = get();
+      // Require a non-empty name too: the server's rejoinSchema rejects a blank name,
+      // so emitting without one would only burn the seat's grace window for nothing.
+      if (roomCode && myId && myName) {
+        socket.emit("rejoin", { code: roomCode, playerId: myId, name: myName });
+      }
+    });
 
     socket.on("joined", ({ code, myId, isHost }) => {
       set({ myId, roomCode: code, isHost });
@@ -187,6 +205,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   selectMode(m) {
     set({ mode: m });
+  },
+
+  setPendingJoinCode(code) {
+    set({ pendingJoinCode: code });
   },
 
   startHostSetup(name) {
@@ -384,6 +406,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   toggleHostView() {
     set((s) => ({ hostViewLeader: !s.hostViewLeader }));
+  },
+
+  setPeeking(on) {
+    set({ peeking: on });
   },
 
   toast(msg) {

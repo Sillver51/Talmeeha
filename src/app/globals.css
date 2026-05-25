@@ -517,7 +517,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 }
 .wc.hv-assassin::before{
   content:'☠';
-  position:absolute;top:3px;left:5px;
+  position:absolute;top:3px;inset-inline-start:5px;
   font-size:.6rem;opacity:.6;
 }
 
@@ -549,7 +549,7 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
 }
 .wc.h-assassin::before{
   content:'☠';
-  position:absolute;top:3px;left:5px;
+  position:absolute;top:3px;inset-inline-start:5px;
   font-size:.6rem;opacity:.6;
 }
 
@@ -573,6 +573,15 @@ input[type=number]{width:68px;text-align:center;margin-bottom:0;}
   transition:all .2s;
 }
 .room-code-display:hover{box-shadow:0 0 28px rgba(139,92,246,0.25);}
+
+/* ─── ROOM SHARE (code + QR) ─── */
+.room-share{display:flex;flex-direction:column;align-items:center;gap:.7rem;}
+.room-qr{
+  background:var(--glass);
+  border:1px solid var(--glass-brd);
+  border-radius:var(--r);
+  padding:.7rem;line-height:0;
+}
 
 /* ─── GAME LOG ─── */
 .game-log{
@@ -754,3 +763,49 @@ html[data-reduced-motion="on"] .confetti{display:none;}
     animation:none !important;
   }
 }
+
+/* ─── ONBOARDING ─── */
+.onboard-wrap{
+  position:fixed;inset:0;z-index:70;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse at 50% 25%, #1C1346 0%, var(--bg) 60%);
+  display:flex;align-items:center;justify-content:center;padding:1.5rem;
+}
+.onboard-card{
+  max-width:420px;width:100%;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:.8rem;
+}
+.onboard-card .grape-emoji{font-size:4.5rem;}
+.onboard-title{
+  font-size:3rem;font-weight:900;
+  background:var(--grad-signature);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.onboard-lead{color:var(--text2);font-weight:600;line-height:1.7;font-size:1rem;}
+
+/* ─── COACH MARKS ─── */
+.coach-wrap{
+  position:fixed;inset-inline:0;bottom:0;z-index:55;
+  display:flex;justify-content:center;padding:1rem;
+  pointer-events:none;
+}
+.coach-card{
+  pointer-events:auto;
+  max-width:460px;width:100%;
+  background:var(--surface);
+  border:1px solid var(--grape);
+  border-radius:var(--r);
+  padding:.9rem 1rem;
+  box-shadow:0 0 24px rgba(139,92,246,.25), var(--shadow);
+}
+.coach-step{color:var(--grape2);font-weight:900;font-size:.72rem;margin-bottom:.3rem;}
+.coach-text{color:var(--text);font-weight:700;line-height:1.7;margin-bottom:.7rem;}
+.coach-actions{display:flex;justify-content:space-between;align-items:center;gap:.5rem;}
+
+/* ─── PASS-THE-PHONE HANDOFF ─── */
+.handoff{
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  background:var(--glass);border:1px solid var(--glass-brd);
+  border-radius:var(--r);padding:.6rem;margin-bottom:.4rem;
+}
+.handoff-label{font-weight:800;font-size:.85rem;color:var(--text2);}
+.btn.peeking{box-shadow:0 0 0 2px var(--gold2), 0 0 18px rgba(232,160,32,.4);}
