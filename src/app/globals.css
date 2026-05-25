@@ -924,6 +924,42 @@ html[data-reduced-motion="on"]{ --motion-scale: 0; }
 .board > *:nth-child(18){ animation-delay: calc(374ms * var(--motion-scale)); }
 .board > *:nth-child(n+19){ animation-delay: calc(396ms * var(--motion-scale)); }
 
+/* ─── LEADER "YOU HOLD THE KEY" SWEEP ───
+   A one-time grape→gold sheen that wipes across the board the first time an
+   online leader enters the playing phase of a game. The .key-reveal class is
+   added by <Board> for ~1s then removed (transient, client-only — never
+   persisted). Pure CSS visual via an ::after overlay clipped to the rounded
+   board. Gated by --motion-scale: under reduced motion the duration collapses
+   to 0 and the explicit overrides below set animation:none, so nothing sweeps
+   (the overlay simply never appears). Guessers/host never get the class. */
+@keyframes keySweep{
+  0%{   opacity:0; transform: translateX(120%); }
+  12%{  opacity:1; }
+  88%{  opacity:1; }
+  100%{ opacity:0; transform: translateX(-120%); }
+}
+.board.key-reveal{ position:relative; overflow:hidden; }
+.board.key-reveal::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:3;
+  /* a narrow diagonal grape/gold sheen band */
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    var(--grape-dim) 47%,
+    rgba(232,160,32,.32) 50%,
+    var(--grape-dim) 53%,
+    transparent 62%
+  );
+  mix-blend-mode: screen;
+  animation: keySweep calc(1000ms * var(--motion-scale)) var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce){ .board.key-reveal::after{ animation:none; opacity:0; } }
+html[data-reduced-motion="on"] .board.key-reveal::after{ animation:none; opacity:0; }
+
 /* ─── FLIP-REVEAL (fires once on a freshly revealed tile) ───
    True 3D Y-axis flip with a spring overshoot + mid-flip squash pop.
    GPU-friendly: transform + opacity only. Duration is scaled by
