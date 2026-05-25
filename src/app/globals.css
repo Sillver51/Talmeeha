@@ -868,15 +868,7 @@ html[data-reduced-motion="on"]{ --motion-scale: 0; }
   padding:.62rem 0;border-top:1px solid var(--border);
   font-weight:700;font-size:.92rem;
 }
-.toggle{
-  border:1px solid var(--glass-brd);
-  background:var(--glass);color:var(--text2);
-  border-radius:999px;padding:.32rem .8rem;
-  font-weight:800;font-size:.8rem;cursor:pointer;
-  font-family:inherit;
-}
-.toggle.on{background:var(--grad-signature);color:#0A0A0F;border-color:transparent;}
-.toggle:focus-visible,.settings-gear:focus-visible{
+.settings-gear:focus-visible{
   outline:none;border-color:var(--grape);
   box-shadow:0 0 0 3px var(--grape-dim);
 }

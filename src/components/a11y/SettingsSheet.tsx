@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePrefsStore } from "@/store/prefsStore";
 import InstallButton from "@/components/pwa/InstallButton";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -56,50 +57,38 @@ export default function SettingsSheet({ open, onClose }: SettingsSheetProps) {
 
         <div className="settings-row">
           <span>ألوان مناسبة لعمى الألوان</span>
-          <button
-            className={palette === "colorblind" ? "toggle on" : "toggle"}
-            role="switch"
-            aria-checked={palette === "colorblind"}
-            onClick={() => update("palette", palette === "colorblind" ? "default" : "colorblind")}
-          >
-            {palette === "colorblind" ? "مُفعّل" : "مُعطّل"}
-          </button>
+          <Switch
+            checked={palette === "colorblind"}
+            onCheckedChange={(v) => update("palette", v ? "colorblind" : "default")}
+            aria-label="ألوان مناسبة لعمى الألوان"
+          />
         </div>
 
         <div className="settings-row">
           <span>تقليل الحركة</span>
-          <button
-            className={reducedMotion === "on" ? "toggle on" : "toggle"}
-            role="switch"
-            aria-checked={reducedMotion === "on"}
-            onClick={() => update("reducedMotion", reducedMotion === "on" ? "system" : "on")}
-          >
-            {reducedMotion === "on" ? "مُفعّل" : "تلقائي"}
-          </button>
+          <Switch
+            checked={reducedMotion === "on"}
+            onCheckedChange={(v) => update("reducedMotion", v ? "on" : "system")}
+            aria-label="تقليل الحركة"
+          />
         </div>
 
         <div className="settings-row">
           <span id="set-digits-label">الأرقام</span>
-          <button
-            className="toggle"
+          <Button
+            variant="outline"
+            size="sm"
             aria-labelledby="set-digits-label"
             aria-label={digits === "eastern" ? "الأرقام: عربية" : "الأرقام: لاتينية"}
             onClick={() => update("digits", digits === "eastern" ? "western" : "eastern")}
           >
             {digits === "eastern" ? "١٢٣ عربية" : "123 لاتينية"}
-          </button>
+          </Button>
         </div>
 
         <div className="settings-row">
           <span>الصوت</span>
-          <button
-            className={sound ? "toggle on" : "toggle"}
-            role="switch"
-            aria-checked={sound}
-            onClick={() => update("sound", !sound)}
-          >
-            {sound ? "مُفعّل" : "مُعطّل"}
-          </button>
+          <Switch checked={sound} onCheckedChange={(v) => update("sound", v)} aria-label="الصوت" />
         </div>
 
         <div className="settings-row">
