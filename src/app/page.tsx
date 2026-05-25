@@ -22,11 +22,19 @@ export default function Home() {
   const connect = useGameStore((s) => s.connect);
   const gs = useGameStore((s) => s.gs);
   const clientScreen = useGameStore((s) => s.clientScreen);
+  const selectMode = useGameStore((s) => s.selectMode);
+  const setPendingJoinCode = useGameStore((s) => s.setPendingJoinCode);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     connect();
-  }, [connect]);
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get("room");
+    if (room && /^\d{4}$/.test(room)) {
+      selectMode("online");
+      setPendingJoinCode(room);
+    }
+  }, [connect, selectMode, setPendingJoinCode]);
 
   return (
     <>

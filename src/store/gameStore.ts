@@ -44,6 +44,7 @@ interface GameStore {
   roomCode: string | null;
   isHost: boolean;
   gs: PlayerView | null;
+  pendingJoinCode: string | null;
   // local UI
   mode: Mode;
   clientScreen: ClientScreen;
@@ -56,6 +57,7 @@ interface GameStore {
   connect(): void;
   // actions
   selectMode(m: Mode): void;
+  setPendingJoinCode(code: string | null): void;
   startHostSetup(name: string): void;
   addPlayer(t: Team, name: string): void;
   removePlayer(t: Team, name: string): void;
@@ -140,6 +142,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   roomCode: null,
   isHost: false,
   gs: null,
+  pendingJoinCode: null,
   mode: "host",
   clientScreen: "home",
   doubtMode: false,
@@ -187,6 +190,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   selectMode(m) {
     set({ mode: m });
+  },
+
+  setPendingJoinCode(code) {
+    set({ pendingJoinCode: code });
   },
 
   startHostSetup(name) {
