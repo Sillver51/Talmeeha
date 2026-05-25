@@ -849,3 +849,12 @@ html[data-reduced-motion="on"] .confetti{display:none;}
     inset 0 -1px 0 rgba(0,0,0,.35);
   backdrop-filter: blur(18px) saturate(1.2);
 }
+
+/* ─── SCREEN ENTER TRANSITION ─── */
+@keyframes screenEnter{
+  from{ opacity:0; transform: translateY(calc(10px * var(--motion-scale))) scale(calc(1 - .01 * var(--motion-scale))); }
+  to  { opacity:1; transform: none; }
+}
+.screen-enter{
+  animation: screenEnter calc(var(--dur-base) * var(--motion-scale)) var(--ease-out);
+}
