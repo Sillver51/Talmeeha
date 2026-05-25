@@ -5,7 +5,6 @@ import PrefsEffect from "@/components/a11y/PrefsEffect";
 import SettingsSheet from "@/components/a11y/SettingsSheet";
 import Onboarding from "@/components/onboarding/Onboarding";
 import PwaRegister from "@/components/pwa/PwaRegister";
-import Toast from "@/components/brand/Toast";
 import GameScreen from "@/components/screens/GameScreen";
 import HomeScreen from "@/components/screens/HomeScreen";
 import LobbyScreen from "@/components/screens/LobbyScreen";
@@ -21,7 +20,8 @@ import { useGameStore } from "@/store/gameStore";
  * Opens the socket once on mount, then renders the active screen:
  *  - no `gs`            → host-mode `clientScreen` (home | setup)
  *  - `gs.phase`         → setup | lobby | game (playing/ended placeholder)
- * The `<Toast/>` overlay is always mounted; `<html dir="rtl">` lives in layout.
+ * Toasts are rendered by the sonner `<Toaster/>` in layout; `<html dir="rtl">`
+ * also lives in layout.
  */
 export default function Home() {
   const connect = useGameStore((s) => s.connect);
@@ -59,7 +59,6 @@ export default function Home() {
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ConnectionBanner />
       <RoomLostModal />
-      <Toast />
     </>
   );
 }

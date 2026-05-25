@@ -54,10 +54,10 @@ export default function RootLayout({
     // onto <html> before React hydrates; this scopes the suppression to this element only.
     <html lang="ar" dir="rtl" suppressHydrationWarning className={tajawal.variable}>
       <body className={tajawal.variable}>
-        {/* TooltipProvider is required by shadcn Tooltip; Sonner <Toaster/> is
-            additive — the existing brand <Toast> keeps working alongside it. */}
+        {/* TooltipProvider is required by shadcn Tooltip. Sonner <Toaster/> is the
+            single toast system; RTL + bottom-center matches the old brand toast UX. */}
         <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
+        <Toaster dir="rtl" position="bottom-center" />
       </body>
     </html>
   );
