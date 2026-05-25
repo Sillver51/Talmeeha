@@ -4,6 +4,9 @@ import type { PlayerView, Team } from "@/lib/types";
 import type { TimerPreset } from "@/lib/game";
 import { PRESETS } from "@/lib/game";
 import { useGameStore } from "@/store/gameStore";
+import { usePrefsStore } from "@/store/prefsStore";
+import { formatNumber } from "@/lib/i18n/digits";
+import { arabicCount } from "@/lib/i18n/plural";
 import RoomShare from "@/components/share/RoomShare";
 import { Button } from "@/components/ui/button";
 
@@ -46,6 +49,7 @@ interface TeamCardProps {
 function TeamCard({ team, gs }: TeamCardProps) {
   const joinTeam = useGameStore((s) => s.joinTeam);
   const becomeLeader = useGameStore((s) => s.becomeLeader);
+  const digits = usePrefsStore((s) => s.digits);
   const ids = gs.teams[team];
   const style = TEAM_STYLE[team];
   const isRed = team === "red";
@@ -74,7 +78,7 @@ function TeamCard({ team, gs }: TeamCardProps) {
         id={`cnt-${team}`}
         style={{ fontSize: ".7rem", margin: ".18rem 0 .32rem" }}
       >
-        {ids.length} لاعبين
+        {arabicCount(ids.length, formatNumber(ids.length, digits), { one: "لاعب واحد", two: "لاعبان", plural: "لاعبين" })}
       </div>
       <ul style={{ listStyle: "none" }} id={`lst-${team}`}>
         {ids.map((id) => {

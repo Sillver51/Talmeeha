@@ -5,6 +5,7 @@ import { hGuesser, hLeader, type Role } from "@/lib/ui/roles";
 import TeamGlyph from "@/components/brand/TeamGlyph";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatNumber } from "@/lib/i18n/digits";
+import { arabicCount } from "@/lib/i18n/plural";
 
 /**
  * Game header (`.g-header`) — ports legacy markup (~759–771) + the score/wins/
@@ -55,7 +56,7 @@ function turnBox(
   if (isMyTurn && !isLeader && gs.gphase) {
     return {
       text: doubtMode
-        ? "وضع الشك 🤔 — انقر لتعليم"
+        ? "وضع الشك 🤔 — انقر على كلمة"
         : `خمّن الآن! ${turn === "red" ? "🔴" : "🔵"}`,
       className,
     };
@@ -87,7 +88,7 @@ export default function GameHeader({
           <TeamGlyph team="red" /> {gs.teamNames.red}
         </div>
         <div className="wins-badge wins-badge-red" id="wins-red-badge">
-          {formatNumber(winsRed, digits)} انتصار
+          {arabicCount(winsRed, formatNumber(winsRed, digits), { one: "انتصار واحد", two: "انتصاران", plural: "انتصارات" })}
         </div>
       </div>
       <div className={tb.className} id="turn-box">
@@ -101,7 +102,7 @@ export default function GameHeader({
           <TeamGlyph team="blue" /> {gs.teamNames.blue}
         </div>
         <div className="wins-badge wins-badge-blue" id="wins-blue-badge">
-          {formatNumber(winsBlue, digits)} انتصار
+          {arabicCount(winsBlue, formatNumber(winsBlue, digits), { one: "انتصار واحد", two: "انتصاران", plural: "انتصارات" })}
         </div>
       </div>
     </div>

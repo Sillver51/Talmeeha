@@ -42,7 +42,7 @@ export default function GameScreen() {
   const showActionRow = !isHost && !isLeader && isMyTurn && gs.gphase && playing;
 
   const cpbText = gs.gphase
-    ? `يخمّن: ${hGuesser(gs)} — انقر الكلمة | Shift+انقر للشك 🤔`
+    ? `يخمّن: ${hGuesser(gs)} — انقر الكلمة 🤔`
     : `القائد: ${hLeader(gs)} — أدخل التلميح`;
 
   return (

@@ -121,7 +121,7 @@ export default function WordCard({
       tabIndex={isInteractive ? 0 : undefined}
       aria-label={isInteractive ? card.w : undefined}
       style={style}
-      title={hostActionable ? "انقر للتخمين | Shift+انقر للشك" : undefined}
+      title={hostActionable ? "انقر للتخمين" : undefined}
     >
       <span>{card.w}</span>
       {dCount > 0 && (

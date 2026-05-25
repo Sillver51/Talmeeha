@@ -3,6 +3,7 @@
 import type { PlayerView } from "@/lib/types";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatNumber } from "@/lib/i18n/digits";
+import { arabicCount } from "@/lib/i18n/plural";
 
 /**
  * Clue panel (`.clue-panel`) — ports legacy markup (~792–796) + render logic
@@ -27,11 +28,11 @@ export default function CluePanel({ gs }: CluePanelProps) {
         </span>
       ) : (
         <span className="clue-wait" id="clue-display">
-          في انتظار القائد...
+          في انتظار القائد…
         </span>
       )}
       <span className="guesses-left" id="g-left">
-        {gs.clue && gs.gphase ? `تبقّى ${formatNumber(gs.gleft, digits)} تخمينات` : ""}
+        {gs.clue && gs.gphase ? `تبقّى ${arabicCount(gs.gleft, formatNumber(gs.gleft, digits), { one: "تخمين واحد", two: "تخمينان", plural: "تخمينات" })}` : ""}
       </span>
     </div>
   );
