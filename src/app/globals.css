@@ -763,3 +763,21 @@ html[data-reduced-motion="on"] .confetti{display:none;}
     animation:none !important;
   }
 }
+
+/* ─── ONBOARDING ─── */
+.onboard-wrap{
+  position:fixed;inset:0;z-index:70;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse at 50% 25%, #1C1346 0%, var(--bg) 60%);
+  display:flex;align-items:center;justify-content:center;padding:1.5rem;
+}
+.onboard-card{
+  max-width:420px;width:100%;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:.8rem;
+}
+.onboard-card .grape-emoji{font-size:4.5rem;}
+.onboard-title{
+  font-size:3rem;font-weight:900;
+  background:var(--grad-signature);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.onboard-lead{color:var(--text2);font-weight:600;line-height:1.7;font-size:1rem;}
