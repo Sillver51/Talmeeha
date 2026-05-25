@@ -781,3 +781,22 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   background:var(--grad-signature);-webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .onboard-lead{color:var(--text2);font-weight:600;line-height:1.7;font-size:1rem;}
+
+/* ─── COACH MARKS ─── */
+.coach-wrap{
+  position:fixed;inset-inline:0;bottom:0;z-index:55;
+  display:flex;justify-content:center;padding:1rem;
+  pointer-events:none;
+}
+.coach-card{
+  pointer-events:auto;
+  max-width:460px;width:100%;
+  background:var(--surface);
+  border:1px solid var(--grape);
+  border-radius:var(--r);
+  padding:.9rem 1rem;
+  box-shadow:0 0 24px rgba(139,92,246,.25), var(--shadow);
+}
+.coach-step{color:var(--grape2);font-weight:900;font-size:.72rem;margin-bottom:.3rem;}
+.coach-text{color:var(--text);font-weight:700;line-height:1.7;margin-bottom:.7rem;}
+.coach-actions{display:flex;justify-content:space-between;align-items:center;gap:.5rem;}
