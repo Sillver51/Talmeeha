@@ -151,7 +151,7 @@ export default function LobbyScreen() {
       <div className="card" style={{ maxWidth: "520px" }}>
         <RoomShare code={code} />
         <div className="muted tc" style={{ margin: ".5rem 0 1rem" }}>
-          شارك الرمز أو امسح الكود مع أصحابك
+          شارك الرمز أو امسح رمز QR مع أصحابك
         </div>
         <div
           style={{

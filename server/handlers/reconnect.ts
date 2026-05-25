@@ -32,9 +32,17 @@ export function registerReconnectHandlers(
       return;
     }
 
+    const old = room.players[playerId];
+    // Security: a seat may only be reclaimed while its player is in the disconnected grace
+    // window. An active (connected) seat must never be hijackable by another client that
+    // learned the playerId from the shared room state (socket ids travel in the projected view).
+    if (old && !old.disconnected) {
+      socket.emit("error", "المقعد مشغول");
+      return;
+    }
+
     cancelRemoval(code, playerId);
     const newId = socket.id;
-    const old = room.players[playerId];
 
     let players: Record<string, Player>;
     let teams: Record<Team, string[]>;

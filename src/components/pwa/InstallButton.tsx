@@ -33,7 +33,8 @@ export default function InstallButton() {
 
   return (
     <button
-      className="toggle on"
+      className="btn btn-gold btn-sm"
+      aria-label="تثبيت التطبيق"
       onClick={async () => {
         await deferred.prompt();
         setDeferred(null);

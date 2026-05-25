@@ -37,4 +37,17 @@ describe("shareCardSummary", () => {
   it("defaults a null winner to red without throwing", () => {
     expect(shareCardSummary(view({ winner: null })).winnerName).toBe("الصقور");
   });
+  it("handles a blue win with asymmetric team names + margin from red's count", () => {
+    const s = shareCardSummary(view({ winner: "blue", counts: { red: 2, blue: 0, neutral: 1 } }));
+    expect(s.winnerName).toBe("النمور");
+    expect(s.loserName).toBe("الصقور");
+    expect(s.margin).toBe(2);
+  });
+  it("reports a zero margin when the loser had no cards left", () => {
+    expect(shareCardSummary(view({ counts: { red: 0, blue: 0, neutral: 0 } })).margin).toBe(0);
+  });
+  it("does not flag the assassin when it is still unrevealed", () => {
+    const v = view({ board: [{ w: "ق", t: "assassin", rv: false }], winner: "red" });
+    expect(shareCardSummary(v).assassin).toBe(false);
+  });
 });

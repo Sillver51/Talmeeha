@@ -209,4 +209,24 @@ describe("reconnection", () => {
 
     [a, b2].forEach((s) => s.close());
   });
+
+  it("rejects rejoin onto an active (connected) seat (anti-hijack)", async () => {
+    const a = connect();
+    a.emit("create_online", { name: "A" });
+    const ja = await nextJoined(a);
+    const code = ja.code;
+
+    const b = connect();
+    b.emit("join_online", { code, name: "B" });
+    const jb = await nextJoined(b);
+    await waitForState(a, (st) => Boolean(st.players[jb.myId]));
+
+    // An attacker learns B's id from the shared room state, but B is still connected.
+    const x = connect();
+    x.emit("rejoin", { code, playerId: jb.myId, name: "X" });
+    const err = await new Promise<string>((res) => x.once("error", res));
+    expect(typeof err).toBe("string");
+
+    [a, b, x].forEach((s) => s.close());
+  });
 });

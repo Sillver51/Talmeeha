@@ -164,7 +164,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // still holds the prior code + playerId, so the server remaps us to the new socket id.
     socket.on("connect", () => {
       const { roomCode, myId, myName } = get();
-      if (roomCode && myId) {
+      // Require a non-empty name too: the server's rejoinSchema rejects a blank name,
+      // so emitting without one would only burn the seat's grace window for nothing.
+      if (roomCode && myId && myName) {
         socket.emit("rejoin", { code: roomCode, playerId: myId, name: myName });
       }
     });

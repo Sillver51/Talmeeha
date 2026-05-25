@@ -28,10 +28,21 @@ export default function HandoffGate({ gs }: HandoffGateProps) {
       </span>
       <button
         className={peeking ? "btn btn-gold btn-sm peeking" : "btn btn-gold btn-sm"}
+        aria-label="اضغط مطوّلاً (أو مفتاح المسافة) لرؤية المفتاح"
         onPointerDown={show}
         onPointerUp={hide}
         onPointerLeave={hide}
         onPointerCancel={hide}
+        onKeyDown={(e) => {
+          if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            show();
+          }
+        }}
+        onKeyUp={(e) => {
+          if (e.key === " " || e.key === "Enter") hide();
+        }}
+        onBlur={hide}
         onContextMenu={(e) => e.preventDefault()}
       >
         {peeking ? "👁 المفتاح ظاهر" : "اضغط مطوّلاً لرؤية المفتاح"}

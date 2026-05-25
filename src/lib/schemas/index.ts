@@ -13,7 +13,7 @@ export const createHostSchema = z.object({
 });
 export const createOnlineSchema = z.object({ name });
 export const joinOnlineSchema = z.object({ code, name });
-export const rejoinSchema = z.object({ code, playerId: z.string().trim().min(1).max(40), name });
+export const rejoinSchema = z.object({ code, playerId: z.string().trim().min(1).max(24), name });
 export const selectTeamSchema = z.object({ code, team });
 export const becomeLeaderSchema = z.object({ code, team });
 export const startGameSchema = z.object({ code });

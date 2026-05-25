@@ -13,6 +13,8 @@ export interface ShareSummary {
 export function shareCardSummary(view: PlayerView): ShareSummary {
   const winner: Team = view.winner ?? "red";
   const loser: Team = winner === "red" ? "blue" : "red";
+  // Safe on a role-filtered view: an assassin that ended the game is always revealed
+  // (rv:true), so it carries its real type even for non-key-holders.
   const assassin = view.board.some((c) => c.t === "assassin" && c.rv);
   return {
     winner,
