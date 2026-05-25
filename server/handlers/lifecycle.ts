@@ -5,7 +5,7 @@ import { broadcastState } from "../emit";
 import { scheduleRemoval } from "../presence";
 import { armTurnDeadline, cancelTurnDeadline } from "../timers";
 import { startGameSchema, restartSchema } from "@/lib/schemas";
-import { buildBoard, remaining } from "@/lib/game";
+import { buildBoard, remaining, nextTurn, addLog, teamHasActiveGuesser } from "@/lib/game";
 import { WORDS } from "@/lib/words";
 
 // Ports legacy start_game (172-186), restart (276-288), disconnect (291-308).
@@ -105,6 +105,22 @@ export function registerLifecycleHandlers(
       };
       store.set(code, marked);
       void broadcastState(io, code);
+
+      // If the on-turn team just lost its last connected guesser, pass the turn so the
+      // game can't soft-lock (the disconnected player can rejoin and play next cycle).
+      if (
+        marked.phase === "playing" &&
+        !marked.hostMode &&
+        !teamHasActiveGuesser(marked, marked.turn)
+      ) {
+        const advanced = nextTurn({
+          ...marked,
+          log: addLog(marked.log, "⏭ تم تمرير الدور — لا يوجد لاعب متصل"),
+        });
+        store.set(code, advanced);
+        void broadcastState(io, code);
+        armTurnDeadline(io, code); // re-arm the per-turn timer for the new team if enabled
+      }
 
       const removedId = socket.id;
       scheduleRemoval(code, removedId, () => {

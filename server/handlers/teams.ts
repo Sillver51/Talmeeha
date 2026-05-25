@@ -33,6 +33,7 @@ export function registerTeamHandlers(
 
     const room = store.get(code);
     if (!room || !room.players[socket.id]) return;
+    if (room.phase !== "lobby" && room.phase !== "setup") return; // teams/leaders locked once playing
 
     const teams = removeFromTeams(room, socket.id);
     teams[team] = [...teams[team], socket.id];
@@ -67,6 +68,13 @@ export function registerTeamHandlers(
 
     const room = store.get(code);
     if (!room || !room.players[socket.id]) return;
+    if (room.phase !== "lobby" && room.phase !== "setup") return; // teams/leaders locked once playing
+
+    const current = room.leaders[team];
+    if (current && current !== socket.id && !room.players[current]?.disconnected) {
+      socket.emit("error", "للفريق قائد بالفعل");
+      return;
+    }
 
     let teams = room.teams;
     let players = room.players;
