@@ -81,6 +81,20 @@ function TeamCard({ team, gs }: TeamCardProps) {
         {arabicCount(ids.length, formatNumber(ids.length, digits), { one: "لاعب واحد", two: "لاعبان", plural: "لاعبين" })}
       </div>
       <ul style={{ listStyle: "none" }} id={`lst-${team}`}>
+        {ids.length === 0 && (
+          <li
+            className="muted"
+            style={{
+              fontSize: ".7rem",
+              padding: ".35rem 0",
+              textAlign: "center",
+              fontStyle: "normal",
+            }}
+            aria-label="لا يوجد لاعبون بعد"
+          >
+            لا أحد بعد — شارك الرمز 👆
+          </li>
+        )}
         {ids.map((id) => {
           const player = gs.players[id];
           const isLeader = gs.leaders[team] === id;

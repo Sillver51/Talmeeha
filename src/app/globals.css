@@ -1266,3 +1266,18 @@ html[data-reduced-motion="on"] .confetti{display:none;}
   box-shadow:0 0 0 3px var(--grape-dim);
 }
 
+/* ─── SPECTATOR NOTICE ─── */
+/* Muted glass pill shown when a connected player has no team during a live game. */
+.spectator-notice{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:.45rem .9rem;
+  font-size:.78rem;
+  font-weight:700;
+  color:var(--text2);
+  text-align:center;
+  margin-block-end:.4rem;
+  backdrop-filter:blur(8px);
+}
+
