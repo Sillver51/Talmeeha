@@ -7,7 +7,7 @@ import {
   toggleDoubtSchema,
   endTurnSchema,
 } from "@/lib/schemas";
-import { submitClue, resolveGuess, toggleDoubt, nextTurn } from "@/lib/game";
+import { addLog, submitClue, resolveGuess, toggleDoubt, nextTurn } from "@/lib/game";
 import { broadcastState } from "../emit";
 import { armTurnDeadline } from "../timers";
 import { hLeader, hGuesser, rotateGuesser } from "./hostNames";
@@ -125,7 +125,7 @@ export function registerPlayHandlers(
       room.leaders[room.turn] !== socket.id;
     if (!isHost && !isGuesser) return;
 
-    const next = nextTurn({ ...room, log: ["⏭ انتهى الدور", ...room.log] });
+    const next = nextTurn({ ...room, log: addLog(room.log, "⏭ انتهى الدور") });
 
     store.set(code, next);
     armTurnDeadline(io, code); // a manual end always flips the turn → re-arm for the new team

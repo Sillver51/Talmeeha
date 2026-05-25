@@ -1,6 +1,6 @@
 import type { Server } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents } from "@/lib/types";
-import { applyTurnDeadline, nextTurn } from "@/lib/game";
+import { addLog, applyTurnDeadline, nextTurn } from "@/lib/game";
 import { store } from "./rooms";
 import { broadcastState } from "./emit";
 
@@ -52,10 +52,14 @@ async function expire(io: IO, code: string): Promise<void> {
   if (!room || room.phase !== "playing" || !room.timer?.enabled) return;
   // Pass the turn only. nextTurn flips turn + resets clue/gleft/gphase/doubts; board untouched.
   const passed = applyTurnDeadline(
-    nextTurn({ ...room, log: ["⏰ انتهى الوقت", ...room.log] }),
+    nextTurn({ ...room, log: addLog(room.log, "⏰ انتهى الوقت") }),
     Date.now(),
   );
   store.set(code, passed);
   await broadcastState(io, code);
-  if (passed.timer?.enabled) schedule(io, code, passed.timer.durationMs);
+  // Re-read: the room may have been deleted/ended during the async broadcast.
+  const fresh = store.get(code);
+  if (fresh?.phase === "playing" && fresh.timer?.enabled) {
+    schedule(io, code, fresh.timer.durationMs);
+  }
 }
