@@ -156,6 +156,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (get().socket) return;
     const socket: GameSocket = io();
 
+    // On every (re)connect: if we already hold a room seat, ask the server to restore it.
+    // First connect is a no-op (roomCode/myId are null). After a network drop, the store
+    // still holds the prior code + playerId, so the server remaps us to the new socket id.
+    socket.on("connect", () => {
+      const { roomCode, myId, myName } = get();
+      if (roomCode && myId) {
+        socket.emit("rejoin", { code: roomCode, playerId: myId, name: myName });
+      }
+    });
+
     socket.on("joined", ({ code, myId, isHost }) => {
       set({ myId, roomCode: code, isHost });
     });
