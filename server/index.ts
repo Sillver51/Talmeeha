@@ -21,3 +21,20 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
 io.on("connection", (socket) => registerHandlers(io, socket));
 
 httpServer.listen(port, () => console.log(`🍇 تلميحة على المنفذ ${port}`));
+
+// Graceful shutdown: drain Socket.io and the HTTP server before exiting so that
+// rolling deploys (Railway/Render send SIGTERM) close connections cleanly.
+let shuttingDown = false;
+function shutdown(signal: NodeJS.Signals): void {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`↘️  ${signal} — إيقاف تدريجي…`);
+  io.close(() => {
+    httpServer.close(() => {
+      console.log("✅ تم الإغلاق");
+      process.exit(0);
+    });
+  });
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
