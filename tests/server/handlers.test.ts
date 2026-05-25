@@ -243,6 +243,94 @@ describe("reconnection", () => {
   });
 });
 
+describe("integrity guards", () => {
+  it("become_leader mid-game is phase-gated: leaders stay unchanged", async () => {
+    const { code, host, guest, redMember, blueMember } = await startOnlineGame();
+    const before = store.get(code)!;
+    const redLeaderBefore = before.leaders.red;
+
+    // redMember tries to grab the red leader seat while phase === "playing".
+    // The phase-gate (Fix 1) returns silently before any state change, so the
+    // roster is locked: leaders are untouched.
+    redMember.emit("become_leader", { code, team: "red" });
+    // Give the server time to process (and ignore) the request before asserting.
+    await new Promise<void>((res) => setTimeout(res, 100));
+
+    const after = store.get(code)!;
+    expect(after.leaders.red).toBe(redLeaderBefore);
+    expect(after.phase).toBe("playing");
+
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
+  });
+
+  it("select_team mid-game is phase-gated: a member's team stays unchanged", async () => {
+    const { code, host, guest, redMember, blueMember } = await startOnlineGame();
+    const before = store.get(code)!;
+    const redMemberId = redMember.id!;
+    const teamBefore = before.players[redMemberId]?.team;
+    expect(teamBefore).toBe("red");
+
+    // redMember tries to switch to blue while phase === "playing".
+    // The phase-gate returns silently before any state change, so the team is locked.
+    redMember.emit("select_team", { code, team: "blue" });
+    // Give the server time to process (and ignore) the request before asserting.
+    await new Promise<void>((res) => setTimeout(res, 100));
+
+    const after = store.get(code)!;
+    expect(after.players[redMemberId]?.team).toBe("red");
+    expect(after.teams.red).toContain(redMemberId);
+    expect(after.teams.blue).not.toContain(redMemberId);
+    expect(after.phase).toBe("playing");
+
+    [host, guest, redMember, blueMember].forEach((s) => s.close());
+  });
+
+  it("anti-steal in lobby: a second member can't take a connected leader's seat", async () => {
+    const a = connect();
+    a.emit("create_online", { name: "A" });
+    const ja = await nextJoined(a);
+    const code = ja.code;
+
+    const b = connect();
+    b.emit("join_online", { code, name: "B" });
+    await nextJoined(b);
+
+    // A becomes red leader (still in lobby, phase !== playing).
+    a.emit("select_team", { code, team: "red" });
+    a.emit("become_leader", { code, team: "red" });
+    await waitForState(a, (st) => st.leaders.red === ja.myId);
+
+    // B joins red and tries to steal the leader seat — A is still connected → rejected.
+    b.emit("select_team", { code, team: "red" });
+    await waitForState(a, (st) => st.teams.red.length === 2);
+
+    const errMsg = new Promise<string>((res) => b.once("error", res));
+    b.emit("become_leader", { code, team: "red" });
+    expect(typeof (await errMsg)).toBe("string");
+
+    const after = store.get(code)!;
+    expect(after.leaders.red).toBe(ja.myId);
+
+    [a, b].forEach((s) => s.close());
+  });
+
+  it("auto-advances the turn when the on-turn team loses its only guesser", async () => {
+    const { state, host, guest, redMember, blueMember } = await startOnlineGame();
+    const turn: Team = state.turn;
+    // The on-turn team's sole guesser (member, not leader).
+    const guesser = turn === "red" ? redMember : blueMember;
+    const other: Team = turn === "red" ? "blue" : "red";
+
+    guesser.close(); // disconnect the lone guesser → server should pass the turn
+
+    // Assert via a still-connected socket (host) that the turn flipped.
+    const after = await waitForState(host, (st) => st.turn === other);
+    expect(after.turn).toBe(other);
+
+    [host, guest, blueMember, redMember].forEach((s) => s.close());
+  });
+});
+
 describe("blitz timer", () => {
   it("enabling a timer in the lobby projects turnDeadlineAt once the game starts", async () => {
     const before = Date.now();
