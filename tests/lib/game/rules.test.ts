@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { submitClue, resolveGuess, toggleDoubt } from "@/lib/game/rules";
+import { submitClue, resolveGuess, toggleDoubt, endTimedGame } from "@/lib/game/rules";
+import { resolveSuddenDeath } from "@/lib/game/suddenDeath";
 import type { Card, GameState } from "@/lib/types";
 
 const c = (w: string, t: Card["t"], rv = false): Card => ({ w, t, rv });
@@ -86,6 +87,45 @@ describe("resolveGuess", () => {
     const s = state([c("بحر", "red"), c("قمر", "red")]);
     resolveGuess(s, 0, "لاعب");
     expect(s.board[0]!.rv).toBe(false);
+  });
+  it("a neutral/enemy miss bumps wrongGuesses[turn] and resets clockTimeouts", () => {
+    const s = state([c("بحر", "neutral"), c("قمر", "red"), c("ليل", "blue")], {
+      gleft: 2,
+      turn: "red",
+      clockTimeouts: 3,
+      wrongGuesses: { red: 1, blue: 0 },
+    });
+    const { state: n, outcome } = resolveGuess(s, 0, "لاعب");
+    expect(outcome).toBe("miss");
+    expect(n.wrongGuesses).toEqual({ red: 2, blue: 0 });
+    expect(n.clockTimeouts).toBe(0);
+  });
+  it("an own-color hit resets clockTimeouts to 0", () => {
+    const s = state([c("بحر", "red"), c("قمر", "red"), c("ليل", "blue")], {
+      gleft: 2,
+      sRed: 2,
+      clockTimeouts: 5,
+    });
+    const { state: n, outcome } = resolveGuess(s, 0, "لاعب");
+    expect(outcome).toBe("hit");
+    expect(n.clockTimeouts).toBe(0);
+  });
+});
+
+describe("endTimedGame", () => {
+  it("ends the game with the sudden-death winner and bumps that team's wins", () => {
+    // red has 1 remaining, blue has 2 → tier-1 picks red.
+    const s = state(
+      [c("بحر", "red"), c("قمر", "blue"), c("ليل", "blue")],
+      { turn: "blue", wins: { red: 0, blue: 0 } },
+    );
+    const expected = resolveSuddenDeath({ ...s, endedOnClock: true });
+    const n = endTimedGame(s);
+    expect(n.phase).toBe("ended");
+    expect(n.endedOnClock).toBe(true);
+    expect(n.winner).toBe(expected);
+    expect(n.winner).toBe("red");
+    expect(n.wins[expected]).toBe(1);
   });
 });
 

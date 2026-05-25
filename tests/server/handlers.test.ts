@@ -399,4 +399,62 @@ describe("blitz timer", () => {
       vi.useRealTimers();
     }
   });
+
+  // Deterministic: with clockTimeouts already at 1, the NEXT expiry hits the threshold
+  // of 2. Both teams still hold words → sudden-death resolves the game WITHOUT revealing.
+  it("a second consecutive timeout triggers sudden-death without revealing a card", async () => {
+    vi.useFakeTimers();
+    try {
+      const code = "0008";
+      const card = (t: Card["t"]): Card => ({ w: "x", t, rv: false });
+      const room: GameState = {
+        code,
+        phase: "playing",
+        hostMode: false,
+        board: [
+          card("red"),
+          card("red"),
+          card("blue"),
+          card("blue"),
+          card("neutral"),
+          card("assassin"),
+        ],
+        turn: "red",
+        clue: null,
+        gleft: 0,
+        gphase: false,
+        winner: null,
+        teams: { red: [], blue: [] },
+        leaders: { red: null, blue: null },
+        teamNames: { red: "أحمر", blue: "أزرق" },
+        players: {},
+        doubts: {},
+        wins: { red: 0, blue: 0 },
+        sRed: 2,
+        sBlue: 2,
+        log: [],
+        timer: { enabled: true, preset: "blitz", durationMs: 30 },
+        clockTimeouts: 1, // one team already timed out → next expiry hits the threshold
+        wrongGuesses: { red: 0, blue: 0 },
+      };
+      store.set(code, room);
+      const revealedBefore = room.board.filter((c) => c.rv).length; // 0
+
+      const stubIo = { in: () => ({ fetchSockets: async () => [] }) } as unknown as Server;
+      armTurnDeadline(stubIo, code);
+
+      await vi.advanceTimersByTimeAsync(35);
+
+      const after = store.get(code)!;
+      expect(after.phase).toBe("ended"); // sudden-death resolved the game
+      expect(after.winner === "red" || after.winner === "blue").toBe(true); // a valid team won
+      expect(after.endedOnClock).toBe(true); // ended on the clock
+      expect(after.board.filter((c) => c.rv).length).toBe(revealedBefore); // NEVER revealed
+
+      cancelTurnDeadline(code);
+      store.delete(code);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

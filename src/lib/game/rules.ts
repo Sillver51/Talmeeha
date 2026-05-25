@@ -1,12 +1,17 @@
 import type { Card, GameState, Team } from "@/lib/types";
 import { nextTurn } from "./turn";
 import { checkWin, remaining } from "./win";
+import { resolveSuddenDeath } from "./suddenDeath";
 
 export type GuessOutcome = "hit" | "miss" | "assassin" | "win" | "noop";
 
 const LOG_CAP = 50;
 export function addLog(log: readonly string[], line: string): string[] {
   return [line, ...log].slice(0, LOG_CAP);
+}
+
+function wrongTally(s: GameState): Record<Team, number> {
+  return { red: s.wrongGuesses?.red ?? 0, blue: s.wrongGuesses?.blue ?? 0 };
 }
 
 // Re-derive team counts from the board each guess (legacy used per-step deltas); board is the single source of truth, so this also self-heals any drift.
@@ -22,6 +27,14 @@ function endGame(state: GameState, winner: Team, logLine: string): GameState {
     wins: { ...state.wins, [winner]: state.wins[winner] + 1 },
     log: addLog(state.log, logLine),
   };
+}
+
+/** End a timed game whose clock ran out with both teams still holding words:
+ *  pick the winner deterministically via the sudden-death resolver. */
+export function endTimedGame(state: GameState): GameState {
+  const onClock: GameState = { ...state, endedOnClock: true };
+  const winner = resolveSuddenDeath(onClock);
+  return endGame(onClock, winner, `⏰🏆 فاز ${state.teamNames[winner]} بالحسم! 🍇`);
 }
 
 export function submitClue(state: GameState, word: string, num: number, by: string): GameState {
@@ -45,7 +58,7 @@ export function resolveGuess(
   const board: Card[] = state.board.map((c, i) => (i === index ? { ...c, rv: true } : c));
   const doubts = { ...state.doubts };
   delete doubts[index];
-  let s = withCounts({ ...state, board, doubts });
+  let s = withCounts({ ...state, board, doubts, clockTimeouts: 0 });
 
   if (card.t === "assassin") {
     const winner: Team = s.turn === "red" ? "blue" : "red";
@@ -66,7 +79,11 @@ export function resolveGuess(
   }
 
   // neutral/enemy: log the miss, then check win (revealing an enemy card can win it for them)
-  s = { ...s, log: addLog(s.log, `❌ ${by}: "${card.w}"`) };
+  s = {
+    ...s,
+    wrongGuesses: { ...wrongTally(s), [s.turn]: wrongTally(s)[s.turn] + 1 },
+    log: addLog(s.log, `❌ ${by}: "${card.w}"`),
+  };
   const won = checkWin(board);
   if (won) return { state: endGame(s, won, `🏆 فاز ${s.teamNames[won]}! 🍇`), outcome: "win" };
   return { state: nextTurn(s), outcome: "miss" };

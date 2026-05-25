@@ -49,6 +49,8 @@ export interface GameState {
   timer?: TimerConfig;
   turnDeadlineAt?: number | null;
   endedOnClock?: boolean;
+  wrongGuesses?: Record<Team, number>;
+  clockTimeouts?: number;
 }
 
 export interface Joined { code: string; myId: string; isHost: boolean; }

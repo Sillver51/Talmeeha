@@ -70,6 +70,9 @@ export function registerLifecycleHandlers(
       doubts: {},
       sRed: remaining(board, "red"),
       sBlue: remaining(board, "blue"),
+      wrongGuesses: { red: 0, blue: 0 },
+      clockTimeouts: 0,
+      endedOnClock: false,
       log: [`بدأت اللعبة! يبدأ ${room.teamNames[startTeam]} 🍇`],
     };
 
