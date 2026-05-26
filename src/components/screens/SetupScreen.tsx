@@ -1,15 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronRight, Crown, Plus, Rocket, Star, Trash2 } from "lucide-react";
 import type { Team } from "@/lib/types";
 import { useGameStore } from "@/store/gameStore";
 import { Button } from "@/components/ui/button";
+import TeamGlyph from "@/components/brand/TeamGlyph";
 
 /**
  * Setup screen (host mode) — ports legacy `#s-setup` (~679–719) + `renderSetup`
  * (~890–904). Two team cards with editable names, add/remove players, set
  * leader, and a launch button enabled once each team has ≥2 players + a leader.
  * Driven by `hSetup` in the store. Arabic copy preserved verbatim.
+ *
+ * Icons are inline SVG (lucide) for crisp rendering at all densities. The
+ * team identity glyph (▲/⬣) replaces the 🔴/🔵 emoji so colorblind palette
+ * users get a shape-based signal that matches the in-game cards.
  */
 const DEFAULT_RED_NAME = "الفريق الأحمر";
 const DEFAULT_BLUE_NAME = "الفريق الأزرق";
@@ -36,7 +42,9 @@ function TeamSetupCard({ team, teamName, onTeamNameChange }: TeamSetupCardProps)
   return (
     <div className={isRed ? "team-setup-card tsc-red" : "team-setup-card tsc-blue"}>
       <div className="tsc-header">
-        <span className="tsc-icon">{isRed ? "🔴" : "🔵"}</span>
+        <span className="tsc-icon" aria-hidden="true">
+          <TeamGlyph team={team} />
+        </span>
         <input
           className="team-name-inp"
           id={`${team}-team-name`}
@@ -45,9 +53,10 @@ function TeamSetupCard({ team, teamName, onTeamNameChange }: TeamSetupCardProps)
           onChange={(e) => onTeamNameChange(e.target.value)}
           style={
             isRed
-              ? { color: "var(--red2)", borderColor: "rgba(240,64,96,.28)" }
-              : { color: "var(--blue2)", borderColor: "rgba(45,110,255,.28)" }
+              ? { color: "var(--red2)", borderColor: "rgba(255,77,141,.32)" }
+              : { color: "var(--blue2)", borderColor: "rgba(52,168,255,.32)" }
           }
+          aria-label={`اسم ${isRed ? "الفريق الأحمر" : "الفريق الأزرق"}`}
         />
       </div>
       <div className="add-player-row">
@@ -66,8 +75,9 @@ function TeamSetupCard({ team, teamName, onTeamNameChange }: TeamSetupCardProps)
           variant={isRed ? "red" : "blue"}
           size="sm"
           onClick={submit}
+          aria-label="إضافة لاعب"
         >
-          + أضف
+          <Plus size={14} aria-hidden="true" /> أضف
         </Button>
       </div>
       <div className="players-tags" id={`${team}-tags`}>
@@ -78,19 +88,32 @@ function TeamSetupCard({ team, teamName, onTeamNameChange }: TeamSetupCardProps)
               key={name}
               className={isLeader ? "player-tag is-leader" : "player-tag"}
             >
-              {isLeader && <span>⭐</span>}
+              {isLeader && (
+                <Crown
+                  size={12}
+                  aria-hidden="true"
+                  className="pt-crown"
+                  strokeWidth={2.5}
+                />
+              )}
               <span className="pt-name">{name}</span>
               <button
                 className="pt-set-leader"
                 onClick={() => setLeader(team, name)}
+                aria-label={`تعيين ${name} قائداً`}
+                title="تعيين قائداً"
+                type="button"
               >
-                ⭐
+                <Star size={13} aria-hidden="true" strokeWidth={2.5} />
               </button>
               <button
                 className="pt-remove"
                 onClick={() => removePlayer(team, name)}
+                aria-label={`حذف ${name}`}
+                title="حذف"
+                type="button"
               >
-                ✕
+                <Trash2 size={12} aria-hidden="true" strokeWidth={2} />
               </button>
             </span>
           );
@@ -99,9 +122,18 @@ function TeamSetupCard({ team, teamName, onTeamNameChange }: TeamSetupCardProps)
       <div
         className="leader-hint"
         id={`${team}-leader-hint`}
-        style={{ color: setup.leader ? "var(--gold2)" : "var(--muted)" }}
+        style={{ color: setup.leader ? "var(--gold2)" : "var(--text2)" }}
       >
-        {setup.leader ? `القائد: ${setup.leader} ⭐` : "اضغط ⭐ لتعيين القائد"}
+        {setup.leader ? (
+          <>
+            القائد: {setup.leader}{" "}
+            <Crown size={11} aria-hidden="true" strokeWidth={2.5} style={{ display: "inline-block", verticalAlign: "middle" }} />
+          </>
+        ) : (
+          <>
+            اضغط <Star size={11} aria-hidden="true" strokeWidth={2.5} style={{ display: "inline-block", verticalAlign: "middle" }} /> لتعيين القائد
+          </>
+        )}
       </div>
     </div>
   );
@@ -126,10 +158,8 @@ export default function SetupScreen() {
     <div className="screen on" id="s-setup">
       <div className="setup-wrap">
         <div style={{ textAlign: "center", marginBottom: "1.4rem" }}>
-          <div style={{ fontSize: "2rem", marginBottom: ".3rem" }}>🍇</div>
-          <div className="logo" style={{ fontSize: "2.2rem" }}>
-            تلميحة
-          </div>
+          <div style={{ fontSize: "2rem", marginBottom: ".3rem" }} aria-hidden="true">🍇</div>
+          <div className="logo" style={{ fontSize: "2.2rem" }}>تلميحة</div>
           <div className="logo-tag">إعداد اللاعبين</div>
         </div>
         <div className="teams-setup">
@@ -152,7 +182,7 @@ export default function SetupScreen() {
             disabled={!ok}
             onClick={() => launchHostGame(redName, blueName)}
           >
-            🚀 ابدأ اللعبة
+            <Rocket size={16} aria-hidden="true" /> ابدأ اللعبة
           </Button>
           <div
             className="can-start-hint"
@@ -162,7 +192,7 @@ export default function SetupScreen() {
             يحتاج كل فريق لاعبَين على الأقل + قائد واحد
           </div>
           <Button variant="outline" className="w-full mt" onClick={goHome}>
-            <bdi>←</bdi> رجوع
+            <ChevronRight size={14} aria-hidden="true" /> رجوع
           </Button>
         </div>
       </div>

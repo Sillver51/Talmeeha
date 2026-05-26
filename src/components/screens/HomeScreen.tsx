@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { KeyboardEvent } from "react";
+import { ChevronLeft, ClipboardCopy, Gamepad2, Globe, Monitor, Sparkles } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useGameStore } from "@/store/gameStore";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,9 @@ export default function HomeScreen() {
     <div className="screen on" id="s-home">
       <Logo tagline="لعبة الفرق والكلمات" mascot />
       <div className="card">
-        <div className="card-title">🎮 اختر طريقة اللعب</div>
+        <div className="card-title">
+          <Gamepad2 size={16} aria-hidden="true" /> اختر طريقة اللعب
+        </div>
         <div className="mode-grid">
           <div
             className={mode === "host" ? "mode-card selected" : "mode-card"}
@@ -51,7 +54,9 @@ export default function HomeScreen() {
             onClick={() => selectMode("host")}
             onKeyDown={(e) => onKey(e, () => selectMode("host"))}
           >
-            <span className="mode-icon">🖥️</span>
+            <span className="mode-icon" aria-hidden="true">
+              <Monitor size={28} strokeWidth={1.5} />
+            </span>
             <div className="mode-title">وضع المضيف</div>
             <div className="mode-desc">أنت تضيف الأسماء وتتحكم — الشباب حواليك</div>
           </div>
@@ -64,7 +69,9 @@ export default function HomeScreen() {
             onClick={() => selectMode("online")}
             onKeyDown={(e) => onKey(e, () => selectMode("online"))}
           >
-            <span className="mode-icon">🌐</span>
+            <span className="mode-icon" aria-hidden="true">
+              <Globe size={28} strokeWidth={1.5} />
+            </span>
             <div className="mode-title">وضع أونلاين</div>
             <div className="mode-desc">كل لاعب من جهازه برمز الغرفة</div>
           </div>
@@ -88,7 +95,7 @@ export default function HomeScreen() {
               className="w-full"
               onClick={() => startHostSetup(hostName)}
             >
-              ✦ إعداد اللعبة
+              <Sparkles size={16} aria-hidden="true" /> إعداد اللعبة
             </Button>
           </div>
         ) : (
@@ -106,7 +113,7 @@ export default function HomeScreen() {
               className="w-full"
               onClick={() => createRoom(onlineName)}
             >
-              📋 إنشاء غرفة
+              <ClipboardCopy size={16} aria-hidden="true" /> إنشاء غرفة
             </Button>
             <div className="divider"></div>
             <input
@@ -125,7 +132,7 @@ export default function HomeScreen() {
               className="w-full"
               onClick={() => joinRoom(code, onlineName)}
             >
-              الانضمام <bdi>←</bdi>
+              الانضمام <ChevronLeft size={16} aria-hidden="true" />
             </Button>
           </div>
         )}

@@ -1,14 +1,15 @@
 "use client";
 
+import { Eye, EyeOff, Settings } from "lucide-react";
 import type { PlayerView } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
-import TeamGlyph from "@/components/brand/TeamGlyph";
+import { type LogEvent, startingTeamOf } from "@/lib/game/logParser";
 import { Button } from "@/components/ui/button";
-import { usePrefsStore } from "@/store/prefsStore";
 import { useGameStore } from "@/store/gameStore";
-import { formatNumber } from "@/lib/i18n/digits";
-import { arabicCount } from "@/lib/i18n/plural";
-import TurnCapsule from "./TurnCapsule";
+import { useCountdown } from "@/lib/time/useCountdown";
+import ArcDial from "./ArcDial";
+import Headline from "./Headline";
+import VoiceStrand from "./VoiceStrand";
 
 interface StatusStripProps {
   gs: PlayerView;
@@ -17,52 +18,76 @@ interface StatusStripProps {
   isHost: boolean;
   winsRed: number;
   winsBlue: number;
+  /** Newest parsed log entry (computed once in GameScreen). */
+  lastEvent: LogEvent | null;
 }
 
-export default function StatusStrip({ gs, role, myId, isHost, winsRed, winsBlue }: StatusStripProps) {
-  const digits = usePrefsStore((s) => s.digits);
+/**
+ * Top rail of the Night Stage — the "Pulse" redesign.
+ *
+ *   [ARC-RED]   [HEADLINE (5 moment states)]   [ARC-BLUE]
+ *               [VOICE STRAND]
+ *               [HOST TRAY (when host)]
+ *
+ * No game logic here — purely compositional. State/server reads happen
+ * inside the children; the strip just routes props.
+ */
+export default function StatusStrip({
+  gs, role, myId, isHost, winsRed, winsBlue, lastEvent,
+}: StatusStripProps) {
   const hostViewLeader = useGameStore((s) => s.hostViewLeader);
   const toggleHostView = useGameStore((s) => s.toggleHostView);
   const goToSetup = () => useGameStore.setState({ clientScreen: "setup" });
 
+  const msLeft = useCountdown(gs.turnDeadlineAt ?? null);
+  const activeTeam = gs.phase === "playing" ? gs.turn : null;
+
+  // Starting team holds 9 cards, the other holds 8 (board.ts). Derive once
+  // from the start log entry — falls back to red-starts when no log present
+  // (matches legacy behaviour during the brief pre-deal frame).
+  const startingTeam = startingTeamOf(gs.log ?? [], gs.teamNames) ?? "red";
+  const startingTotalRed = startingTeam === "red" ? 9 : 8;
+  const startingTotalBlue = startingTeam === "blue" ? 9 : 8;
+
   return (
-    <header className="status-strip">
-      <div className="ss-score red">
-        <div className="n">{formatNumber(gs.sRed ?? 9, digits)}</div>
-        <div className="glyph-row"><TeamGlyph team="red" /> {gs.teamNames.red}</div>
-        <span className="wins">
-          {arabicCount(winsRed, formatNumber(winsRed, digits), {
-            one: "انتصار واحد",
-            two: "انتصاران",
-            plural: "انتصارات",
-          })}
-        </span>
+    <header className="status-strip" role="banner">
+      <div className="status-rail">
+        <ArcDial
+          team="red"
+          remaining={gs.sRed ?? 0}
+          startingTotal={startingTotalRed}
+          wins={winsRed}
+          teamName={gs.teamNames.red}
+          active={activeTeam === "red"}
+        />
+        <Headline gs={gs} lastEvent={lastEvent} msLeft={msLeft} />
+        <ArcDial
+          team="blue"
+          remaining={gs.sBlue ?? 0}
+          startingTotal={startingTotalBlue}
+          wins={winsBlue}
+          teamName={gs.teamNames.blue}
+          active={activeTeam === "blue"}
+        />
       </div>
 
-      <TurnCapsule gs={gs} role={role} myId={myId} />
-
-      <div className="ss-score blue">
-        <div className="n">{formatNumber(gs.sBlue ?? 8, digits)}</div>
-        <div className="glyph-row"><TeamGlyph team="blue" /> {gs.teamNames.blue}</div>
-        <span className="wins">
-          {arabicCount(winsBlue, formatNumber(winsBlue, digits), {
-            one: "انتصار واحد",
-            two: "انتصاران",
-            plural: "انتصارات",
-          })}
-        </span>
-      </div>
+      <VoiceStrand gs={gs} role={role} myId={myId} lastEvent={lastEvent} />
 
       {isHost && (
-        <div
-          className="ss-actions"
-          style={{ gridColumn: "1 / -1", justifyContent: "center", marginTop: ".25rem" }}
-        >
-          <Button variant="ghost" size="xs" onClick={toggleHostView} aria-pressed={hostViewLeader}>
-            {hostViewLeader ? "🙈 إخفاء المفتاح" : "👁 عرض المفتاح"}
+        <div className="host-tray">
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={toggleHostView}
+            aria-pressed={hostViewLeader}
+            aria-label={hostViewLeader ? "إخفاء المفتاح" : "إظهار المفتاح"}
+          >
+            {hostViewLeader
+              ? <><EyeOff size={14} aria-hidden="true" /> إخفاء</>
+              : <><Eye size={14} aria-hidden="true" /> المفتاح</>}
           </Button>
-          <Button variant="ghost" size="xs" onClick={goToSetup}>
-            ⚙ الإعداد
+          <Button variant="ghost" size="xs" onClick={goToSetup} aria-label="الإعداد">
+            <Settings size={14} aria-hidden="true" /> الإعداد
           </Button>
         </div>
       )}

@@ -3,6 +3,7 @@ import { Tajawal } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import MotionProviders from "@/components/system/MotionProviders";
 
 const tajawal = Tajawal({
   weight: ["300", "400", "500", "700", "800", "900"],
@@ -53,10 +54,13 @@ export default function RootLayout({
     // suppressHydrationWarning: browser extensions inject attributes (e.g. crxemulator)
     // onto <html> before React hydrates; this scopes the suppression to this element only.
     <html lang="ar" dir="rtl" suppressHydrationWarning className={tajawal.variable}>
-      <body className={tajawal.variable}>
+      <body>
         {/* TooltipProvider is required by shadcn Tooltip. Sonner <Toaster/> is the
-            single toast system; RTL + bottom-center matches the old brand toast UX. */}
-        <TooltipProvider>{children}</TooltipProvider>
+            single toast system; RTL + bottom-center matches the old brand toast UX.
+            MotionProviders sets up LazyMotion + reduced-motion-aware MotionConfig. */}
+        <MotionProviders>
+          <TooltipProvider>{children}</TooltipProvider>
+        </MotionProviders>
         <Toaster dir="rtl" position="bottom-center" />
       </body>
     </html>

@@ -1,7 +1,8 @@
 "use client";
 
 import { memo, useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
-import type { PlayerView, Team, ViewCard } from "@/lib/types";
+import { HelpCircle } from "lucide-react";
+import type { PlayerView, Team, ViewCard, VisibleCardType } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
 import CalligraphyText from "./CalligraphyText";
 
@@ -10,6 +11,16 @@ const onKey = (e: KeyboardEvent, fn: () => void) => {
     e.preventDefault();
     fn();
   }
+};
+
+/** Color-independent identity chip per card type. Used by key-holders (host
+ * with peek and online leader) so palette changes (colorblind) keep working. */
+const CHIP: Record<VisibleCardType, string | null> = {
+  red: "▲",
+  blue: "⬣",
+  neutral: "●",
+  assassin: "☠",
+  hidden: null,
 };
 
 /**
@@ -79,19 +90,26 @@ function WordCardImpl({
 
   if (card.rv) {
     const cls = `wc rv rv-${card.t}${flipping ? " reveal-flip" : ""}`;
+    const chip = CHIP[card.t];
     return (
-      <div className={cls}>
+      <div className={cls} data-chip={chip ?? undefined}>
         <CalligraphyText word={card.w} />
-        {card.t === "assassin" ? <span aria-hidden="true"> ☠</span> : null}
       </div>
     );
   }
 
   let className = "wc glass";
+  let chip: string | null = null;
   if (isHost) {
-    if ((hostViewLeader || !gphase) && card.t !== "hidden") className += ` hv-${card.t}`;
+    if ((hostViewLeader || !gphase) && card.t !== "hidden") {
+      className += ` hv-${card.t}`;
+      chip = CHIP[card.t];
+    }
   } else if (isLeader) {
-    if (card.t !== "hidden") className += ` h-${card.t}`;
+    if (card.t !== "hidden") {
+      className += ` h-${card.t}`;
+      chip = CHIP[card.t];
+    }
   }
   if (dCount > 0) className += " doubted";
 
@@ -140,13 +158,15 @@ function WordCardImpl({
       role={isInteractive ? "button" : undefined}
       tabIndex={isInteractive ? 0 : undefined}
       aria-label={isInteractive ? card.w : undefined}
+      data-chip={chip ?? undefined}
       style={style}
       title={hostActionable ? "انقر للتخمين" : undefined}
     >
       <span>{card.w}</span>
       {dCount > 0 && (
-        <span className="doubt-count-txt">
-          {dCount > 1 ? `${dCount} ` : ""}🤔
+        <span className="doubt-count-txt" aria-label={`${dCount} علامات شك`}>
+          {dCount > 1 ? `${dCount} ` : ""}
+          <HelpCircle size={11} aria-hidden="true" strokeWidth={2.5} />
         </span>
       )}
     </div>

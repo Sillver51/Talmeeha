@@ -6,88 +6,345 @@
  */
 
 /* ─── STAGE ROOT ─── */
-.game-on { gap: .5rem; }
+/* Four-row grid: status (auto) · board (auto) · history (1fr, fills space)
+ *                · dock (auto). The history row absorbs whatever vertical
+ * room the board doesn't claim — short games keep the board tight at the top
+ * and the timeline tall; long boards push the history into a thinner strip.
+ * container-type: inline-size lets descendants use @container queries to
+ * recompose at the zone level. */
+.game-on { gap: .5rem; container-type: inline-size; }
 .game-on .game-zones {
-  display: grid; grid-template-rows: auto 1fr auto; gap: .5rem;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: .5rem;
   flex: 1; min-height: 0; width: 100%;
+  container-type: inline-size;
 }
 
-/* ─── STATUS STRIP ─── */
+/* ============================================================
+ * Status rail — "Pulse" redesign
+ * Layout:
+ *   .status-strip       outer container (sticky, vertical stack)
+ *     .status-rail      horizontal row: [arc] [headline] [arc]
+ *     .voice-strand     featured poetic line below the rail
+ *     .host-tray        host-only action chips
+ * ============================================================ */
 .status-strip {
   position: sticky; top: 0; z-index: 5;
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .55rem;
-  background: rgba(18,18,36,.92); backdrop-filter: blur(16px);
-  border: 1px solid var(--border2); border-radius: var(--r);
-  padding: .55rem .8rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+  display: flex; flex-direction: column; gap: .35rem;
+  padding-block: .5rem .35rem;
+  contain: layout style;
 }
-.ss-score { text-align: center; min-width: 64px; }
-.ss-score .n { font-size: 1.7rem; font-weight: 900; line-height: 1; text-shadow: 0 0 16px currentColor; }
-.ss-score.red { color: var(--red2); }
-.ss-score.blue { color: var(--blue2); }
-.ss-score .glyph-row {
-  font-size: .55rem; opacity: .85; margin-top: .15rem;
-  display: flex; justify-content: center; gap: .25rem; align-items: center;
-  color: var(--text2);
-}
-.ss-score .wins {
-  font-size: .55rem;
-  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
-  border-radius: 20px; padding: .07rem .55rem; margin-top: .2rem;
-  display: inline-block; color: var(--text2); font-weight: 700;
-}
-.ss-actions { display: flex; gap: .35rem; }
 
-/* ─── TURN CAPSULE ─── */
-.turn-capsule {
-  position: relative; overflow: hidden;
-  background: rgba(45,110,255,.14); border: 1.5px solid var(--blue);
-  box-shadow: 0 0 18px rgba(52,168,255,.28), inset 0 0 14px rgba(52,168,255,.07);
-  border-radius: 11px;
-  padding: .42rem .7rem; text-align: center;
-  transition: background-color .3s, border-color .3s, box-shadow .3s;
+.status-rail {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: .75rem;
 }
-.turn-capsule.red {
-  background: rgba(255,77,141,.14); border-color: var(--red);
-  box-shadow: 0 0 18px rgba(255,77,141,.28), inset 0 0 14px rgba(255,77,141,.07);
+
+/* ----- ArcDial ---------------------------------------------- */
+.arc-dial {
+  position: relative;
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  transition: transform 220ms ease, filter 220ms ease;
+  filter: saturate(.5) brightness(.85);
+  --arc-color: var(--text2);
 }
-.turn-capsule .turn-line { font-weight: 900; font-size: .82rem; letter-spacing: .2px; }
-.turn-capsule .sub-line { font-size: .62rem; opacity: .88; margin-top: .14rem; min-height: .9rem; }
-.turn-capsule .clue-shimmer {
-  display: inline-block;
-  font-weight: 900; font-size: 1rem; letter-spacing: .5px;
-  background: linear-gradient(110deg, var(--grape2) 10%, var(--gold2) 50%, var(--cyan, #34E0E0) 90%);
+.arc-dial.red  { --arc-color: var(--red, #FF4D8D); }
+.arc-dial.blue { --arc-color: var(--blue, #34A8FF); }
+
+.arc-dial.active {
+  filter: none;
+  transform: scale(1.04);
+}
+.arc-dial.active::after {
+  content: "";
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  box-shadow: 0 0 16px color-mix(in oklab, var(--arc-color) 55%, transparent);
+  pointer-events: none;
+}
+
+.arc-svg { display: block; }
+.arc-bg {
+  stroke: color-mix(in oklab, var(--arc-color) 18%, transparent);
+}
+.arc-fg {
+  stroke: var(--arc-color);
+  transition: stroke-dashoffset 320ms cubic-bezier(.2,.7,.2,1);
+}
+
+.arc-glyph {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  color: var(--arc-color);
+  font-size: 1.05rem; line-height: 1;
+  text-shadow: 0 0 6px color-mix(in oklab, var(--arc-color) 60%, transparent);
+}
+
+.arc-ticks {
+  position: absolute;
+  inset-block-start: -8px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 3px;
+  pointer-events: none;
+}
+.arc-tick {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--arc-color) 25%, transparent);
+  transition: background 220ms ease, transform 220ms ease;
+}
+.arc-tick.lit {
+  background: var(--arc-color);
+  box-shadow: 0 0 4px color-mix(in oklab, var(--arc-color) 70%, transparent);
+}
+.arc-overflow {
+  font-size: .58rem;
+  font-weight: 800;
+  color: var(--arc-color);
+  background: color-mix(in oklab, var(--arc-color) 18%, transparent);
+  border-radius: 999px;
+  padding: 1px 6px;
+  line-height: 1.2;
+}
+
+/* ----- Headline --------------------------------------------- */
+.headline {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: .15rem;
+  padding: .45rem .6rem;
+  min-height: 3rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,.04),
+    rgba(255,255,255,.02) 60%,
+    transparent);
+  border: 1px solid var(--border2, rgba(255,255,255,.06));
+  overflow: hidden;
+}
+
+.headline .hl-line {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-weight: 900;
+  font-size: clamp(.95rem, 2.6vw, 1.1rem);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.headline.moment-awaiting-clue .hl-line.awaiting {
+  font-weight: 800;
+}
+.headline .hl-leader {
+  position: relative;
+  font-weight: 900;
+  padding-block-end: 2px;
+}
+.headline .hl-leader::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0; inset-block-end: 0;
+  block-size: 2px; border-radius: 2px;
+  background: var(--team-c, var(--grape, #B084FF));
+  animation: hl-leader-pulse 2s ease-in-out infinite;
+}
+.headline[data-team="red"] .hl-leader { --team-c: var(--red); }
+.headline[data-team="blue"] .hl-leader { --team-c: var(--blue); }
+@keyframes hl-leader-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+.headline .hl-clue.clue-shimmer {
+  font-weight: 900;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  background: linear-gradient(90deg,
+    var(--text) 0%, var(--gold, #E0C070) 50%, var(--text) 100%);
   background-size: 200% 100%;
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-  animation: clueShimmer 1.6s ease-in-out 1;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hl-shimmer 8s linear infinite;
 }
-@keyframes clueShimmer { from { background-position: 0 0; } to { background-position: 200% 0; } }
-.turn-capsule.urgency-soft { animation: capsuleUrgencySoft 1s ease-in-out infinite; }
-.turn-capsule.urgency-hard { animation: capsuleUrgencyHard .5s ease-in-out infinite; border-color: var(--gold); }
-@keyframes capsuleUrgencySoft { 0%,100% { box-shadow: 0 0 12px currentColor; } 50% { box-shadow: 0 0 22px currentColor; } }
-@keyframes capsuleUrgencyHard {
-  0%,100% { box-shadow: 0 0 16px var(--gold); transform: scale(1); }
-  50%     { box-shadow: 0 0 28px var(--gold); transform: scale(1.01); }
+@keyframes hl-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.headline .hl-count {
+  display: inline-grid; place-items: center;
+  min-width: 1.5rem; padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 900; font-size: .8rem;
+  background: var(--team-c, var(--grape));
+  color: #fff;
+}
+.headline[data-team="red"]  .hl-count { background: var(--red); }
+.headline[data-team="blue"] .hl-count { background: var(--blue); }
+
+.headline .hl-sub {
+  display: inline-flex; align-items: baseline; gap: .5rem;
+  font-weight: 600; font-size: .85rem;
+  color: var(--text2, rgba(240,240,240,.85));
+}
+.headline .hl-remaining-n { font-weight: 800; color: var(--text); }
+
+.headline.urgency {
+  outline: 1px solid var(--gold, #E0C070);
+  outline-offset: -1px;
+  animation: hl-urgency-pulse 2s ease-in-out infinite;
+}
+.headline.urgency-hard {
+  animation: none;
+  outline-width: 1px;
+  outline-color: var(--gold);
+}
+@keyframes hl-urgency-pulse {
+  0%, 100% { outline-color: var(--gold); }
+  50%      { outline-color: color-mix(in oklab, var(--gold) 60%, transparent); }
+}
+.headline .hl-countdown {
+  font-weight: 700; color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  transition: transform 150ms ease;
+}
+.headline.urgency-hard .hl-countdown { transform: scale(1.1); }
+
+.headline.shake { animation: hl-shake 150ms ease-in-out 3; }
+@keyframes hl-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-2px); }
+  75%      { transform: translateX(2px); }
+}
+
+/* Reveal burst ------------------------------------------------ */
+.reveal-burst {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  display: grid; place-items: center;
+}
+.reveal-burst .spark {
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: spark-fly 600ms ease-out forwards;
+}
+.reveal-burst.burst-red .spark    { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.reveal-burst.burst-blue .spark   { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
+.reveal-burst.burst-neutral .spark{ background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+.reveal-burst.burst-assassin .spark{ background: #FF3358; box-shadow: 0 0 6px #FF3358; }
+
+.reveal-burst .s0 { --dx:  18px; --dy: -10px; animation-delay: 0ms; }
+.reveal-burst .s1 { --dx: -18px; --dy: -10px; animation-delay: 30ms; }
+.reveal-burst .s2 { --dx:  22px; --dy:   6px; animation-delay: 60ms; }
+.reveal-burst .s3 { --dx: -22px; --dy:   6px; animation-delay: 90ms; }
+.reveal-burst .s4 { --dx:   0px; --dy: -22px; animation-delay: 120ms; }
+.reveal-burst .s5 { --dx:   0px; --dy:  18px; animation-delay: 150ms; }
+
+@keyframes spark-fly {
+  from { transform: translate(0, 0) scale(.4); opacity: 0; }
+  20%  { opacity: 1; }
+  to   { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+
+/* ----- Voice strand ----------------------------------------- */
+.voice-strand {
+  display: block;
+  text-align: center;
+  min-height: 1.25rem;
+  font-family: inherit;
+}
+.voice-strand .voice-line {
+  display: inline-block;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(.78rem, 2.2vw, .9rem);
+  color: var(--text2, rgba(240,240,240,.92));
+  max-width: 60ch;
+  animation: voice-in 280ms cubic-bezier(.2,.7,.2,1);
+}
+@keyframes voice-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----- Host tray -------------------------------------------- */
+.host-tray {
+  display: flex; justify-content: flex-end; gap: .3rem;
+  padding-inline: .25rem;
+}
+
+/* Reduced motion --------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .headline .hl-clue.clue-shimmer { animation: none; background: var(--text); -webkit-background-clip: initial; background-clip: initial; color: var(--text); }
+  .headline.urgency, .headline.shake, .headline .hl-leader::after { animation: none; }
+  .arc-fg { transition: none; }
+  .reveal-burst .spark { animation: none; opacity: 0; }
+  .voice-strand .voice-line { animation: none; }
+}
+[data-reduced-motion="on"] .headline .hl-clue.clue-shimmer,
+[data-reduced-motion="on"] .headline.urgency,
+[data-reduced-motion="on"] .headline.shake,
+[data-reduced-motion="on"] .headline .hl-leader::after,
+[data-reduced-motion="on"] .voice-strand .voice-line,
+[data-reduced-motion="on"] .arc-fg,
+[data-reduced-motion="on"] .reveal-burst .spark {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Responsive ------------------------------------------------- */
+@media (max-width: 640px) {
+  .status-rail {
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    gap: .5rem;
+  }
+  .arc-dial { width: 48px; height: 48px; }
+  .arc-glyph { font-size: .95rem; }
+  .arc-ticks { inset-block-start: -7px; gap: 2px; }
+  .arc-tick { width: 3px; height: 3px; }
+  .headline { min-height: 2.6rem; padding: .35rem .5rem; }
+  .voice-strand .voice-line { font-size: .78rem; }
+}
+@media (max-width: 360px) {
+  .arc-ticks { display: none; }
+  .arc-dial .arc-overflow {
+    position: absolute; inset-block-start: -6px; inset-inline-start: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 /* ─── BOARD STAGE ─── */
+/* The stage is the hero rectangle but its ambient glow bleeds outward —
+ * overflow:visible lets it tint the strip & dock so the whole screen feels
+ * lit by the active team. Glass shell uses a softer surface; the glow
+ * sits behind via z-index. */
 .board-stage {
   position: relative; flex: 1; min-height: 0;
-  background: rgba(10,10,20,.4);
+  background:
+    linear-gradient(180deg, rgba(20,20,40,.55) 0%, rgba(10,10,20,.30) 100%);
+  border: 1px solid var(--border);
   border-radius: var(--r); padding: .55rem;
-  overflow: hidden;
+  overflow: visible;
+  isolation: isolate;
 }
 .board-stage::before {
-  content: ''; position: absolute; inset: -25%; pointer-events: none;
-  background: radial-gradient(ellipse, var(--stage-glow, rgba(52,168,255,.10)) 0%, transparent 55%);
+  content: ''; position: absolute; inset: -40%; pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%,
+              var(--stage-glow, rgba(52,168,255,.18)) 0%, transparent 65%);
   animation: stagePulse 7s ease-in-out infinite;
+  will-change: opacity, transform;
 }
-.board-stage.team-red  { --stage-glow: rgba(255,77,141,.10); }
-.board-stage.team-blue { --stage-glow: rgba(52,168,255,.10); }
+.board-stage.team-red  { --stage-glow: rgba(255,77,141,.20); }
+.board-stage.team-blue { --stage-glow: rgba(52,168,255,.20); }
 @keyframes stagePulse {
-  0%,100% { opacity: .5; transform: scale(1); }
-  50%     { opacity: 1;  transform: scale(1.05); }
+  0%,100% { opacity: .55; transform: scale(1); }
+  50%     { opacity: 1;   transform: scale(1.06); }
 }
 
 /* Faint Arabic letter constellation behind the board */
@@ -114,32 +371,49 @@
   35%,65% { opacity: .35; transform: scale(1); }
 }
 
-/* ─── GLASS WORD CARDS ─── */
+/* ─── GLASS WORD CARDS (unrevealed, neutral viewer) ───
+ * Glass material with explicit top highlight + bottom shadow rim so the
+ * tile reads as physical even without color. Hover only animates transform
+ * (cheap, compositor-only) — no filter/backdrop-filter changes per the
+ * stacking-context perf rule. */
 .wc.glass {
-  background: rgba(255,255,255,.045); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 6px rgba(0,0,0,.3);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.02) 100%);
+  backdrop-filter: blur(10px) saturate(1.1);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -1px 0 rgba(0,0,0,.30),
+    0 4px 14px rgba(0,0,0,.40);
   color: var(--text);
-  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s, border-color .22s;
+  transition:
+    transform .22s var(--ease-spring),
+    box-shadow .22s var(--ease-spring),
+    border-color .22s var(--ease-spring);
 }
 .wc.glass[role="button"]:hover {
-  transform: translateY(-2px) scale(1.02);
-  border-color: rgba(167,139,250,.5);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 6px 18px rgba(139,92,246,.4);
+  transform: translateY(-3px) scale(1.03);
+  border-color: rgba(167,139,250,.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(0,0,0,.30),
+    0 10px 24px rgba(139,92,246,.32),
+    0 0 0 1px rgba(167,139,250,.18);
+}
+.wc.glass[role="button"]:active {
+  transform: scale(.96);
+  transition-duration: .08s;
 }
 
-/* Reveal flip */
+/* Reveal flip — "pop + bloom" reads as a 3D flip without a double-face
+ * layout. transform + opacity only so it composites cleanly. The component
+ * adds .reveal-flip for ~380ms then strips it, so will-change disappears
+ * with the class (no lingering GPU layers). */
 .board { perspective: 1000px; }
 .wc.reveal-flip {
-  animation: wcFlip 350ms cubic-bezier(.34,1.56,.64,1) both;
-  transform-style: preserve-3d; will-change: transform;
+  animation: wcFlip 350ms var(--ease-spring) both;
+  transform-style: preserve-3d; will-change: transform, opacity;
 }
-@keyframes wcFlip {
-  0%   { transform: rotateY(0); }
-  100% { transform: rotateY(0deg) scale(1); }
-}
-/* True flip would require a 2-face layout; we use a "pop" + bloom that
- * reads as a flip without the double-face complexity. */
 @keyframes wcFlip {
   0%   { transform: scale(.96) rotateY(-12deg); opacity: .85; }
   60%  { transform: scale(1.05) rotateY(8deg); opacity: 1; }
@@ -179,37 +453,121 @@
   100% { opacity: 0; }
 }
 
-/* ─── ACTION DOCK ─── */
+/* ─── ACTION DOCK — "Composer Bar" ─── */
+/* Sticky at the bottom with safe-area inset. Two rows:
+ *   Row 1 — composer: input (flex) + stepper [− N +] + signature CTA.
+ *   Row 2 — meta: hint, slots for doubt / end-turn.
+ * Background gradient + clear border separation lifts the bar against the
+ * stage glow bleed. Padding-bottom honors iOS notch via env(). */
 .action-dock {
   position: sticky; bottom: 0; z-index: 5;
-  background: rgba(18,18,36,.95); backdrop-filter: blur(16px);
+  display: flex; flex-direction: column; gap: .35rem;
+  background:
+    linear-gradient(180deg, rgba(20,20,40,.92) 0%, rgba(14,14,26,.96) 100%);
+  backdrop-filter: blur(16px) saturate(1.1);
   border: 1px solid var(--border2); border-radius: var(--r);
-  padding: .55rem .8rem;
-  box-shadow: 0 -4px 20px rgba(0,0,0,.5);
-  transition: padding .24s cubic-bezier(.34,1.56,.64,1);
+  padding: .55rem .7rem calc(.55rem + env(safe-area-inset-bottom));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 -6px 24px rgba(0,0,0,.55);
+  transition: padding .24s var(--ease-spring);
+  contain: layout style;
 }
-.action-dock.collapsed { padding: .25rem .8rem; }
+.action-dock.collapsed { padding-block: .3rem; gap: 0; }
 .action-dock .row {
-  display: flex; gap: .45rem; align-items: center; flex-wrap: wrap;
+  display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
 }
+.action-dock .row.meta { justify-content: center; min-height: 1rem; }
 .action-dock .hint {
-  font-size: .62rem; opacity: .75; text-align: center; margin-top: .3rem;
-  color: var(--text2);
+  font-size: .72rem; font-weight: 600; opacity: .9; text-align: center;
+  color: var(--text);
+  letter-spacing: .1px;
 }
-.action-dock input[type="text"],
-.action-dock input[type="number"] {
-  background: rgba(10,10,20,.7); border: 1px solid var(--border2);
-  border-radius: var(--r-sm); padding: .5rem .65rem;
-  color: var(--text); font-family: inherit; font-weight: 600; font-size: .82rem;
-  outline: none; min-width: 0;
+
+/* Composer input — pronounced border + grape focus ring (already at .25
+ * opacity; we promote to a defined 2px ring for visibility). */
+.action-dock .composer-input {
+  flex: 1; min-width: 0;
+  background: rgba(8,8,16,.7);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r-sm);
+  padding: .55rem .7rem;
+  color: var(--text);
+  font-family: inherit; font-weight: 700; font-size: .92rem;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
 }
-.action-dock input[type="text"]:focus,
-.action-dock input[type="number"]:focus {
-  border-color: var(--grape);
-  box-shadow: 0 0 0 3px rgba(139,92,246,.25);
+.action-dock .composer-input::placeholder { color: var(--text2); font-weight: 600; }
+.action-dock .composer-input:focus {
+  border-color: var(--grape2);
+  box-shadow: 0 0 0 3px rgba(139,92,246,.28), inset 0 1px 0 rgba(255,255,255,.04);
 }
-.action-dock input[type="number"] {
-  width: 52px; text-align: center; color: var(--gold2); font-weight: 900;
+
+/* Count stepper — [− N +] using semantic buttons + center display.
+ * Touch targets ≥ 36×36 on coarse pointers via @media. */
+.action-dock .stepper {
+  display: inline-flex; align-items: center; gap: 0;
+  background: rgba(8,8,16,.55);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  min-height: 38px;
+}
+.action-dock .stepper button {
+  width: 32px; height: 38px;
+  background: transparent; border: 0; color: var(--grape2);
+  font-size: 1.15rem; font-weight: 900; cursor: pointer; line-height: 1;
+  transition: background .15s, color .15s;
+}
+.action-dock .stepper button:hover:not(:disabled) {
+  background: rgba(139,92,246,.18); color: #FFF;
+}
+.action-dock .stepper button:active:not(:disabled) { transform: scale(.9); }
+.action-dock .stepper button:disabled { opacity: .3; cursor: default; }
+.action-dock .stepper .n {
+  min-width: 28px; padding: 0 .15rem; text-align: center;
+  font-size: 1.05rem; font-weight: 900; color: var(--gold2);
+  text-shadow: 0 0 8px rgba(255,208,96,.35);
+}
+.action-dock .stepper .label {
+  font-size: .6rem; font-weight: 800; color: var(--text2);
+  padding: 0 .35rem 0 .2rem; letter-spacing: .2px;
+}
+
+/* Primary CTA — signature gradient (grape → gold → cyan), 44–48px tall.
+ * Built on top of shadcn Button via className= so we inherit focus-ring +
+ * disabled handling. */
+.action-dock .cta-primary,
+.btn-signature {
+  background: var(--grad-signature);
+  background-size: 200% 100%;
+  color: #0F0820;
+  font-weight: 900;
+  letter-spacing: .3px;
+  border: 0;
+  border-radius: var(--r-sm);
+  height: 44px;
+  padding: 0 1.1rem;
+  font-size: .95rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 6px 16px rgba(139,92,246,.35),
+    0 0 0 1px rgba(255,255,255,.06);
+  transition: transform .12s var(--ease-spring), filter .15s, background-position .4s;
+  cursor: pointer;
+}
+.action-dock .cta-primary:hover:not(:disabled),
+.btn-signature:hover:not(:disabled) {
+  filter: brightness(1.06);
+  background-position: 100% 0%;
+}
+.action-dock .cta-primary:active:not(:disabled),
+.btn-signature:active:not(:disabled) { transform: scale(.97); }
+.action-dock .cta-primary:disabled,
+.btn-signature:disabled { opacity: .5; cursor: default; }
+
+@media (min-width: 640px) {
+  .action-dock .cta-primary, .btn-signature { height: 48px; font-size: 1rem; padding: 0 1.4rem; }
 }
 
 /* Hand-pass animation for host handoff */
@@ -230,61 +588,187 @@ html[dir="rtl"] .hand-pass {
   50%     { transform: translateX(22px); opacity: 1; }
 }
 
-/* CTA fireworks on send */
-.cta-spark { position: relative; }
-.cta-spark.fire::after {
-  content: ''; position: absolute; inset: -8px; border-radius: 9px; pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 50%, var(--gold2) 0%, transparent 18%),
-    radial-gradient(circle at 80% 50%, var(--grape2) 0%, transparent 18%),
-    radial-gradient(circle at 50% 0%,  var(--gold2) 0%, transparent 16%),
-    radial-gradient(circle at 50% 100%, var(--grape2) 0%, transparent 16%);
-  opacity: 0; animation: ctaFire 400ms ease-out 1;
-}
-@keyframes ctaFire {
-  0%   { opacity: 0; transform: scale(.5); }
-  50%  { opacity: 1; transform: scale(1.2); }
-  100% { opacity: 0; transform: scale(1.6); }
-}
-
 /* ─── REDUCED MOTION FALLBACKS ─── */
+/* Unified rule: list all animated game elements once via :is(), then the
+ * data-attribute selector reuses the same list. Lower specificity, less
+ * duplication. (Previously a 13-element selector chain repeated twice.) */
 @media (prefers-reduced-motion: reduce) {
-  .turn-capsule, .turn-capsule.urgency-soft, .turn-capsule.urgency-hard,
-  .board-stage::before, .constellation,
-  .wc.reveal-flip, .wc.shake, .calligraphy > span,
-  .initial-flash, .doubt-aura, .hand-pass, .cta-spark.fire::after {
+  :is(.board-stage::before, .constellation,
+      .wc.reveal-flip, .wc.shake, .calligraphy > span,
+      .initial-flash, .doubt-aura, .hand-pass) {
     animation: none !important;
     transition: none !important;
   }
   .calligraphy > span { opacity: 1; transform: none; }
 }
-[data-reduced-motion="on"] .turn-capsule,
-[data-reduced-motion="on"] .turn-capsule.urgency-soft,
-[data-reduced-motion="on"] .turn-capsule.urgency-hard,
-[data-reduced-motion="on"] .board-stage::before,
-[data-reduced-motion="on"] .constellation,
-[data-reduced-motion="on"] .wc.reveal-flip,
-[data-reduced-motion="on"] .wc.shake,
-[data-reduced-motion="on"] .calligraphy > span,
-[data-reduced-motion="on"] .initial-flash,
-[data-reduced-motion="on"] .doubt-aura,
-[data-reduced-motion="on"] .hand-pass,
-[data-reduced-motion="on"] .cta-spark.fire::after {
+[data-reduced-motion="on"]
+  :is(.constellation,
+      .wc.reveal-flip, .wc.shake, .calligraphy > span,
+      .initial-flash, .doubt-aura, .hand-pass) {
   animation: none !important;
   transition: none !important;
 }
+/* Pseudo-elements cannot appear inside :is() — separate rule. */
+[data-reduced-motion="on"] .board-stage::before {
+  animation: none !important;
+  will-change: auto;
+}
 [data-reduced-motion="on"] .calligraphy > span { opacity: 1; transform: none; }
 
-/* ─── MOBILE TUNING ─── */
-@media (max-width: 520px) {
-  .status-strip { padding: .45rem .55rem; gap: .35rem; }
-  .ss-score .n { font-size: 1.45rem; }
-  .turn-capsule .turn-line { font-size: .74rem; }
-  .turn-capsule .sub-line { font-size: .58rem; }
-  .action-dock { padding: .45rem .55rem; }
-  .initial-flash { font-size: 6rem; }
+/* ─── RESPONSIVE — three layout modes via @container queries ───
+ * Container queries make this work even if the game is later embedded in
+ * a narrow column (e.g. side-by-side spectator + game). Width tiers:
+ *   small  (<640): scores collapse to chips above the capsule;
+ *   medium (640–1023): scores top corners, capsule fills middle;
+ *   wide   (≥1024): scores flank capsule, dock single-row.
+ * The .game-zones container already declares container-type: inline-size. */
+
+/* Dock — narrow screens: 2-row composer.
+ * Row A spans the input full-width; Row B = stepper + CTA.
+ * Note the form wrapper means LeaderInput's two .row blocks are the form's
+ * children, so we target .row directly under the form. We also need the
+ * composer's row to be a grid only when it contains the composer-input. */
+@container (max-width: 480px) {
+  .action-dock form > .row:first-child {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "input input"
+      "stepper cta";
+    gap: .4rem;
+  }
+  .action-dock form > .row:first-child .composer-input { grid-area: input; width: 100%; }
+  .action-dock form > .row:first-child .stepper {
+    grid-area: stepper;
+    justify-self: start;
+  }
+  .action-dock form > .row:first-child .stepper .label { display: none; }
+  .action-dock form > .row:first-child .cta-primary {
+    grid-area: cta;
+    padding-inline: 1rem;
+    min-width: 0;
+    width: 100%;
+    white-space: nowrap;
+  }
 }
-@media (max-width: 360px) {
-  .ss-score { min-width: 50px; }
-  .ss-score .wins { display: none; }
+
+/* Initial-flash size scales with viewport rather than fixed breakpoint */
+.initial-flash { font-size: clamp(5rem, 18vw, 9rem); }
+
+/* Performance: paint-contain stable zones so a card flip doesn't repaint
+ * adjacent chrome. content-visibility on the log keeps off-screen items
+ * out of layout (game log can grow). */
+.action-dock { contain: layout style; }
+.board-stage { contain: layout style; }   /* paint not contained — glow bleeds */
+/* ─── HISTORY TAPE — always-visible scrollable timeline ───
+ * Sits in the flexible grid row between board and dock. The tape itself is
+ * a flex column with a sticky header ("السجل") and a scroller below that
+ * grows to fill the row. content-visibility:auto on the scroller keeps
+ * off-screen rows out of the layout pass; transform-only scrolling. The
+ * top of the scroller is masked with a fade so older entries dissolve
+ * upward as new ones arrive. */
+.history-tape{
+  display: flex; flex-direction: column;
+  min-height: 0;          /* allow the scroller to shrink in a 1fr row */
+  background:
+    linear-gradient(180deg, rgba(20,20,40,.72) 0%, rgba(14,14,26,.82) 100%);
+  backdrop-filter: blur(12px) saturate(1.05);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  contain: layout style;
 }
+.ht-header{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .35rem .65rem;
+  border-block-end: 1px solid var(--border);
+  background: rgba(255,255,255,.025);
+}
+.ht-title{
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .72rem; font-weight: 800; letter-spacing: .3px;
+  color: var(--text2);
+  text-transform: uppercase;
+}
+.ht-title .ht-dot{
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--grape2);
+  box-shadow: 0 0 8px var(--grape2);
+  animation: htPulse 2.4s ease-in-out infinite;
+}
+@keyframes htPulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50%     { transform: scale(.7); opacity: .55; }
+}
+
+.ht-scroller{
+  list-style: none; margin: 0; padding: .35rem .35rem .45rem;
+  flex: 1; min-height: 0;
+  overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column; gap: .25rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.20) transparent;
+  /* Top fade so old entries dissolve upward as new ones append */
+  mask-image: linear-gradient(180deg, transparent 0%, #000 18px, #000 100%);
+}
+.ht-scroller::-webkit-scrollbar{ width: 6px; }
+.ht-scroller::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.22); border-radius: 3px; }
+.ht-scroller::-webkit-scrollbar-track{ background: transparent; }
+
+/* Stable height floor: even when log has 0–1 entries the tape doesn't
+ * collapse and visually "shift" the dock — keeps layout calm. */
+.history-tape .ht-empty{
+  display: flex; align-items: center; justify-content: center;
+  flex: 1;
+  color: var(--text2); font-size: .8rem; font-weight: 600;
+}
+
+/* Row — leading accent rail uses border-inline-start so RTL flips automatically.
+ * Icon, body text, and an optional clue-count chip. */
+.ht-row{
+  position: relative;
+  display: flex; align-items: center; gap: .5rem;
+  padding: .35rem .55rem .35rem .55rem;
+  background: rgba(255,255,255,.025);
+  border-inline-start: 3px solid var(--ht-accent, var(--border2));
+  border-radius: var(--r-sm);
+  font-size: .78rem; font-weight: 600; line-height: 1.3;
+  color: var(--text);
+  min-height: 30px;
+}
+.ht-row .ht-icon{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; flex-shrink: 0;
+  color: var(--ht-icon, var(--text2));
+  background: var(--ht-icon-bg, rgba(255,255,255,.05));
+  border-radius: 50%;
+}
+.ht-row .ht-text{
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.ht-row .ht-text strong{ font-weight: 800; color: var(--text); }
+.ht-row .ht-text em{ font-style: normal; }
+.ht-row .ht-word{ color: var(--text); font-weight: 700; }
+.ht-row .ht-num{
+  display: inline-block;
+  background: var(--gold-dim);
+  border: 1px solid rgba(255,208,96,.4);
+  color: var(--gold2);
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 0 .4rem;
+  font-size: .72rem;
+  margin-inline-start: .25rem;
+}
+
+/* Accent variants — set --ht-accent (rail) + --ht-icon (icon color) +
+ * --ht-icon-bg (icon background tint) per kind. */
+.ht-accent-red     { --ht-accent: var(--red);   --ht-icon: var(--red2);   --ht-icon-bg: rgba(255,77,141,.14); }
+.ht-accent-blue    { --ht-accent: var(--blue);  --ht-icon: var(--blue2);  --ht-icon-bg: rgba(52,168,255,.14); }
+.ht-accent-gold    { --ht-accent: var(--gold);  --ht-icon: var(--gold2);  --ht-icon-bg: rgba(232,160,32,.14); }
+.ht-accent-grape   { --ht-accent: var(--grape); --ht-icon: var(--grape2); --ht-icon-bg: rgba(139,92,246,.14); }
+.ht-accent-neutral { --ht-accent: var(--border2); --ht-icon: var(--text2); --ht-icon-bg: rgba(255,255,255,.05); }
+.ht-accent-danger  { --ht-accent: var(--red);   --ht-icon: #FF8FB6;       --ht-icon-bg: rgba(255,77,141,.18); }

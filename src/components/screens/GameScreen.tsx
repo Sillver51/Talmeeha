@@ -5,8 +5,10 @@ import StatusStrip from "@/components/game/StatusStrip";
 import BoardStage from "@/components/game/BoardStage";
 import ActionDock from "@/components/game/ActionDock";
 import CoachMarks from "@/components/onboarding/CoachMarks";
-import GameLog from "@/components/game/GameLog";
+import HistoryTape from "@/components/game/HistoryTape";
+import type { Team } from "@/lib/types";
 import { hLeader, myRole, myTurn } from "@/lib/ui/roles";
+import { lastEventOf } from "@/lib/game/logParser";
 import { useGameStore } from "@/store/gameStore";
 import { usePrefsStore } from "@/store/prefsStore";
 import { ensureEngine, useGameSounds } from "@/lib/audio";
@@ -32,6 +34,16 @@ export default function GameScreen() {
   const handleFirstGesture = useCallback(() => {
     ensureEngine({ sound, volume });
   }, [sound, volume]);
+
+  // Plain expressions — React Compiler handles memoization automatically.
+  // These sit above the loading-state early return so hook order stays stable.
+  const playerTeams: Record<string, Team> = {};
+  if (gs?.players) {
+    for (const p of Object.values(gs.players)) {
+      if (p.team) playerTeams[p.name] = p.team;
+    }
+  }
+  const lastEvent = lastEventOf(gs?.log ?? [], gs?.teamNames);
 
   if (!gs || !gs.board || !gs.board.length) {
     return (
@@ -69,6 +81,7 @@ export default function GameScreen() {
           isHost={isHost}
           winsRed={winsData.red || 0}
           winsBlue={winsData.blue || 0}
+          lastEvent={lastEvent}
         />
         <BoardStage
           gs={gs}
@@ -78,6 +91,9 @@ export default function GameScreen() {
           isMyTurn={isMyTurn}
           leaderInitial={leaderInitial}
         />
+        {/* HistoryTape fills the flexible row between the board and the dock.
+         * Always-visible scrollable timeline; uses available vertical space. */}
+        <HistoryTape log={gs.log ?? []} teamNames={gs.teamNames} playerTeams={playerTeams} />
         <ActionDock
           gs={gs}
           role={role}
@@ -86,7 +102,6 @@ export default function GameScreen() {
           isMyTurn={isMyTurn}
         />
       </div>
-      <GameLog log={gs.log ?? []} />
       {gs.phase === "ended" && <WinModal gs={gs} />}
     </div>
   );

@@ -11,7 +11,11 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          // Visible on dark surfaces: explicit border + translucent fill via
+          // the shared --glass token so the button reads as a button, not
+          // blended into the card. Hover brightens; aria-expanded keeps the
+          // muted-state pattern.
+          "border-[var(--border2)] bg-[var(--glass)] text-[var(--text)] hover:bg-[rgba(167,139,250,0.12)] hover:border-[var(--grape2)] hover:text-white aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:

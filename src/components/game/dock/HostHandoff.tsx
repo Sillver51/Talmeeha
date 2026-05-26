@@ -1,5 +1,6 @@
 "use client";
 
+import { Eye, EyeOff, HandHelping } from "lucide-react";
 import type { PlayerView } from "@/lib/types";
 import { hLeader } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
@@ -27,9 +28,11 @@ export default function HostHandoff({ gs }: HostHandoffProps) {
   return (
     <>
       <div className="row" style={{ justifyContent: "center", gap: ".5rem" }}>
-        <span className="hand-pass" aria-hidden="true">🤲</span>
-        <span style={{ fontSize: ".78rem", fontWeight: 800 }}>
-          مرّر إلى القائد <TeamGlyph team={gs.turn} /> {hLeader(gs)}
+        <span className="hand-pass" aria-hidden="true">
+          <HandHelping size={20} strokeWidth={1.8} />
+        </span>
+        <span style={{ fontSize: ".82rem", fontWeight: 800 }}>
+          مرّر الجهاز إلى القائد <TeamGlyph team={gs.turn} /> {hLeader(gs)}
         </span>
         <Button
           variant="gold"
@@ -51,7 +54,9 @@ export default function HostHandoff({ gs }: HostHandoffProps) {
           onBlur={hide}
           onContextMenu={(e) => e.preventDefault()}
         >
-          {peeking ? "👁 ظاهر" : "👁 المفتاح"}
+          {peeking
+            ? <><EyeOff size={14} aria-hidden="true" /> ظاهر</>
+            : <><Eye size={14} aria-hidden="true" /> المفتاح</>}
         </Button>
       </div>
       <div style={{ marginTop: ".4rem" }}>

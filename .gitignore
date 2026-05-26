@@ -19,3 +19,7 @@ playwright-report/
 
 # Brainstorming visual-companion working dir
 .superpowers/
+
+# Local screenshots from Playwright dev sessions
+/*.png
+/.playwright-mcp/
