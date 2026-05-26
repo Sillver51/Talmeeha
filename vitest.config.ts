@@ -5,6 +5,9 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
   test: {
     environment: "node",
+    environmentMatchGlobs: [
+      ["tests/components/**", "happy-dom"],
+    ],
     coverage: {
       provider: "v8",
       include: ["src/lib/**"],
