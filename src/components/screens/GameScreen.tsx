@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import StatusStrip from "@/components/game/StatusStrip";
 import BoardStage from "@/components/game/BoardStage";
 import ActionDock from "@/components/game/ActionDock";
@@ -35,6 +35,16 @@ export default function GameScreen() {
     ensureEngine({ sound, volume });
   }, [sound, volume]);
 
+  // Plain expressions — React Compiler handles memoization automatically.
+  // These sit above the loading-state early return so hook order stays stable.
+  const playerTeams: Record<string, Team> = {};
+  if (gs?.players) {
+    for (const p of Object.values(gs.players)) {
+      if (p.team) playerTeams[p.name] = p.team;
+    }
+  }
+  const lastEvent = lastEventOf(gs?.log ?? [], gs?.teamNames);
+
   if (!gs || !gs.board || !gs.board.length) {
     return (
       <div
@@ -54,21 +64,6 @@ export default function GameScreen() {
   const myTeam = myId ? (gs.players[myId]?.team ?? null) : null;
   const leaderName = hLeader(gs);
   const leaderInitial = leaderName ? (Array.from(leaderName)[0] ?? null) : null;
-
-  // Build a name → team lookup so the HistoryTape can color hit/miss rows by
-  // the actor's team (server log lines don't include team identity).
-  const playerTeams = useMemo<Record<string, Team>>(() => {
-    const map: Record<string, Team> = {};
-    for (const p of Object.values(gs.players)) {
-      if (p.team) map[p.name] = p.team;
-    }
-    return map;
-  }, [gs.players]);
-
-  const lastEvent = useMemo(
-    () => lastEventOf(gs.log ?? [], gs.teamNames),
-    [gs.log, gs.teamNames],
-  );
 
   return (
     <div
