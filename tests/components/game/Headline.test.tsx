@@ -16,7 +16,10 @@ function baseGs(): PlayerView {
     clue: null,
     players: {},
     teamNames: { red: "النار", blue: "المحيط" },
-    leaders: { red: "حسن", blue: "ليلى" },
+    leaders: { red: null, blue: null },
+    // Headline resolves the leader via hLeader → hRed/hBlue.leader (host mode).
+    hRed:  { players: ["حسن"],  leader: "حسن",  gIdx: 0 },
+    hBlue: { players: ["ليلى"], leader: "ليلى", gIdx: 0 },
     log: [],
     sRed: 9,
     sBlue: 8,

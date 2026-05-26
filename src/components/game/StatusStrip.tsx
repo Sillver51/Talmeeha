@@ -3,7 +3,7 @@
 import { Eye, EyeOff, Settings } from "lucide-react";
 import type { PlayerView } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
-import type { LogEvent } from "@/lib/game/logParser";
+import { type LogEvent, startingTeamOf } from "@/lib/game/logParser";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/gameStore";
 import { useCountdown } from "@/lib/time/useCountdown";
@@ -42,12 +42,20 @@ export default function StatusStrip({
   const msLeft = useCountdown(gs.turnDeadlineAt ?? null);
   const activeTeam = gs.phase === "playing" ? gs.turn : null;
 
+  // Starting team holds 9 cards, the other holds 8 (board.ts). Derive once
+  // from the start log entry — falls back to red-starts when no log present
+  // (matches legacy behaviour during the brief pre-deal frame).
+  const startingTeam = startingTeamOf(gs.log ?? [], gs.teamNames) ?? "red";
+  const startingTotalRed = startingTeam === "red" ? 9 : 8;
+  const startingTotalBlue = startingTeam === "blue" ? 9 : 8;
+
   return (
     <header className="status-strip" role="banner">
       <div className="status-rail">
         <ArcDial
           team="red"
           remaining={gs.sRed ?? 0}
+          startingTotal={startingTotalRed}
           wins={winsRed}
           teamName={gs.teamNames.red}
           active={activeTeam === "red"}
@@ -56,6 +64,7 @@ export default function StatusStrip({
         <ArcDial
           team="blue"
           remaining={gs.sBlue ?? 0}
+          startingTotal={startingTotalBlue}
           wins={winsBlue}
           teamName={gs.teamNames.blue}
           active={activeTeam === "blue"}

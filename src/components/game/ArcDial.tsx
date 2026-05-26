@@ -3,7 +3,6 @@
 import type { Team } from "@/lib/types";
 import TeamGlyph from "@/components/brand/TeamGlyph";
 
-const TEAM_START_TOTAL: Record<Team, number> = { red: 9, blue: 8 };
 const MAX_TICKS = 5;
 
 const SIZE = 56;
@@ -15,6 +14,9 @@ interface ArcDialProps {
   team: Team;
   /** Cards of this team's color still hidden on the board. */
   remaining: number;
+  /** Card count this team held at the start of the game (9 if starting team,
+   *  8 otherwise). Derived per game by the parent; do not hardcode here. */
+  startingTotal: number;
   /** Lifetime games won by this team in the current room. */
   wins: number;
   /** Used only for the aria-label. */
@@ -33,11 +35,11 @@ interface ArcDialProps {
  * Animations live in game.css and key off the `.arc-dial` class.
  */
 export default function ArcDial({
-  team, remaining, wins, teamName, active,
+  team, remaining, startingTotal, wins, teamName, active,
 }: ArcDialProps) {
-  const startingTotal = Math.max(TEAM_START_TOTAL[team], remaining);
-  const safeRemaining = Math.max(0, Math.min(remaining, startingTotal));
-  const fraction = startingTotal === 0 ? 0 : safeRemaining / startingTotal;
+  const denom = Math.max(startingTotal, remaining, 1);
+  const safeRemaining = Math.max(0, Math.min(remaining, denom));
+  const fraction = safeRemaining / denom;
   const dashOffset = CIRCUMFERENCE * (1 - fraction);
 
   const visibleTicks = Math.min(wins, MAX_TICKS);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseLogEntry, lastEventOf } from "@/lib/game/logParser";
+import { parseLogEntry, lastEventOf, startingTeamOf } from "@/lib/game/logParser";
 
 describe("parseLogEntry", () => {
   const teamNames = { red: "الفريق الأحمر", blue: "الفريق الأزرق" };
@@ -95,6 +95,28 @@ describe("parseLogEntry", () => {
       const e = lastEventOf(log, teamNames);
       expect(e?.kind).toBe("win");
       expect(e?.team).toBe("red");
+    });
+  });
+
+  describe("startingTeamOf", () => {
+    const teamNames = { red: "الفريق الأحمر", blue: "الفريق الأزرق" };
+
+    it("returns null for an empty log", () => {
+      expect(startingTeamOf([], teamNames)).toBeNull();
+    });
+
+    it("returns the starting team from the start entry (newest-first log)", () => {
+      const log = [
+        '✅ عمر: "بحر" — إصابة!',
+        '💡 ليلى: "بحر" — 2',
+        `بدأت اللعبة! يبدأ ${teamNames.blue} 🍇`,
+      ];
+      expect(startingTeamOf(log, teamNames)).toBe("blue");
+    });
+
+    it("returns null when no start entry is present", () => {
+      const log = ['💡 عمر: "بحر" — 2'];
+      expect(startingTeamOf(log, teamNames)).toBeNull();
     });
   });
 });

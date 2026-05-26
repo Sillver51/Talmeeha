@@ -117,3 +117,19 @@ export function lastEventOf(
   if (!log.length) return null;
   return parseLogEntry(log[0]!, teamNames);
 }
+
+/**
+ * Scans the log for the game-start entry and returns the starting team.
+ * The starting team holds 9 cards; the other holds 8 (per `board.ts` deal).
+ * Returns null when no start entry is present (lobby/setup state).
+ */
+export function startingTeamOf(
+  log: readonly string[],
+  teamNames?: { red: string; blue: string },
+): Team | null {
+  for (const raw of log) {
+    const e = parseLogEntry(raw, teamNames);
+    if (e.kind === "start" && e.team) return e.team;
+  }
+  return null;
+}

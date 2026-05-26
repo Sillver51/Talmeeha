@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { PlayerView, Team } from "@/lib/types";
 import type { LogEvent } from "@/lib/game/logParser";
 import type { Moment } from "@/lib/copy/capsule";
+import { hLeader } from "@/lib/ui/roles";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatNumber } from "@/lib/i18n/digits";
 import TeamGlyph from "@/components/brand/TeamGlyph";
@@ -20,6 +21,16 @@ function momentOf(gs: PlayerView): Moment {
   if (gs.phase === "ended") return "ended";
   if (gs.gphase && gs.clue) return "clue-given";
   return "awaiting-clue";
+}
+
+/** Active team's leader name. Host mode keeps the resolved name on
+ *  `gs.hRed.leader` / `gs.hBlue.leader` (`hLeader`); online mode keeps the
+ *  player id on `gs.leaders[team]` and the name on the player record. */
+function activeLeaderName(gs: PlayerView): string {
+  const hostName = hLeader(gs);
+  if (hostName) return hostName;
+  const id = gs.leaders[gs.turn] ?? "";
+  return id ? (gs.players[id]?.name ?? "") : "";
 }
 
 function urgencyClass(deadline: number | null | undefined, msLeft: number): string {
@@ -87,7 +98,7 @@ export default function Headline({ gs, lastEvent, msLeft }: HeadlineProps) {
 
       {moment === "awaiting-clue" && (
         <span className="hl-line awaiting">
-          في انتظار التلميحة من <strong className="hl-leader">{gs.leaders[gs.turn] ?? ""}</strong>
+          في انتظار التلميحة من <strong className="hl-leader">{activeLeaderName(gs)}</strong>
         </span>
       )}
 
