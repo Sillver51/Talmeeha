@@ -1,25 +1,31 @@
 "use client";
 
-import type { KeyboardEvent, MouseEvent } from "react";
+import { memo, useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import type { PlayerView, Team, ViewCard } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
+import CalligraphyText from "./CalligraphyText";
 
 const onKey = (e: KeyboardEvent, fn: () => void) => {
-  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    fn();
+  }
 };
 
 /**
- * Single board cell — ports legacy `renderGame` board loop (~1138–1161).
- *
- * Class logic (MUST match legacy exactly):
- *  - revealed → `wc rv rv-{t}`, shows the word.
+ * Single board cell. Class logic must match legacy exactly:
+ *  - revealed         → `wc rv rv-{t}` + word.
  *  - host & unrevealed → `hv-{t}` when `hostViewLeader || !gphase`.
  *  - online leader & unrevealed → `h-{myTeam}` for own-team cards, `h-assassin`
- *    for the assassin.
- *  - any doubts → `doubted` + a `🤔`/count badge.
- *  - click: host during guess phase → click=guess, shift/ctrl+click=toggle_doubt;
- *    online guesser on turn during guess phase → click=guess, or toggle_doubt
- *    when `doubtMode`. Non-actionable otherwise.
+ *    for the assassin (tinted by true type).
+ *  - any doubts        → `doubted` + `🤔`/count badge.
+ *  - click semantics unchanged.
+ *
+ * Visual upgrades for the stage architecture:
+ *  - Unrevealed cards use the `glass` class for Neon Night glass material.
+ *  - The first reveal of a card adds `reveal-flip` for a 350ms spring pop.
+ *  - Revealed word renders via <CalligraphyText/> for the per-letter cascade.
+ *  - `React.memo` prevents re-render unless props change (turn-tick safe).
  */
 interface WordCardProps {
   card: ViewCard;
@@ -37,7 +43,7 @@ interface WordCardProps {
   onToggleDoubt: (i: number) => void;
 }
 
-export default function WordCard({
+function WordCardImpl({
   card,
   index,
   role,
@@ -58,16 +64,33 @@ export default function WordCard({
   const dCount = doubts ? doubts.length : 0;
   const myDoubtOn = doubts ? isHost || (myId !== null && doubts.includes(myId)) : false;
 
+  // One-shot reveal-flip on the rv:false → rv:true transition.
+  const [flipping, setFlipping] = useState(false);
+  const prevRv = useRef(card.rv);
+  useEffect(() => {
+    if (!prevRv.current && card.rv) {
+      setFlipping(true);
+      const t = setTimeout(() => setFlipping(false), 380);
+      prevRv.current = card.rv;
+      return () => clearTimeout(t);
+    }
+    prevRv.current = card.rv;
+  }, [card.rv]);
+
   if (card.rv) {
-    return <div className={`wc rv rv-${card.t}`}>{card.w}</div>;
+    const cls = `wc rv rv-${card.t}${flipping ? " reveal-flip" : ""}`;
+    return (
+      <div className={cls}>
+        <CalligraphyText word={card.w} />
+        {card.t === "assassin" ? <span aria-hidden="true"> ☠</span> : null}
+      </div>
+    );
   }
 
-  let className = "wc";
+  let className = "wc glass";
   if (isHost) {
-    // Host (pass-and-play) receives the full key; client gates display via host-view / pre-guess.
     if ((hostViewLeader || !gphase) && card.t !== "hidden") className += ` hv-${card.t}`;
   } else if (isLeader) {
-    // Online leader sees the full key: tint EVERY unrevealed card by its true type.
     if (card.t !== "hidden") className += ` h-${card.t}`;
   }
   if (dCount > 0) className += " doubted";
@@ -75,20 +98,18 @@ export default function WordCard({
   const hostActionable = isHost && gphase && playing;
   const guesserActionable = !isHost && isMyTurn && gphase && playing;
 
-  const onClick =
-    hostActionable
-      ? (e: MouseEvent<HTMLDivElement>) => {
-          if (e.shiftKey || e.ctrlKey) onToggleDoubt(index);
+  const onClick = hostActionable
+    ? (e: MouseEvent<HTMLDivElement>) => {
+        if (e.shiftKey || e.ctrlKey) onToggleDoubt(index);
+        else onGuess(index);
+      }
+    : guesserActionable
+      ? () => {
+          if (!isHost && doubtMode) onToggleDoubt(index);
           else onGuess(index);
         }
-      : guesserActionable
-        ? () => {
-            if (!isHost && doubtMode) onToggleDoubt(index);
-            else onGuess(index);
-          }
-        : undefined;
+      : undefined;
 
-  // Mirror legacy outline cue for online doubt-mode targeting.
   const style =
     guesserActionable && doubtMode
       ? {
@@ -102,7 +123,6 @@ export default function WordCard({
   const handleKeyDown = isInteractive
     ? (e: KeyboardEvent<HTMLDivElement>) => {
         onKey(e, () => {
-          // Synthesise a plain click (no modifier keys) for keyboard activation.
           if (hostActionable) onGuess(index);
           else if (guesserActionable) {
             if (doubtMode) onToggleDoubt(index);
@@ -132,3 +152,6 @@ export default function WordCard({
     </div>
   );
 }
+
+const WordCard = memo(WordCardImpl);
+export default WordCard;
