@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import type { PlayerView } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
 import { usePrefsStore } from "@/store/prefsStore";
 import { formatNumber } from "@/lib/i18n/digits";
 import { useCountdown } from "@/lib/time/useCountdown";
+import TeamGlyph from "@/components/brand/TeamGlyph";
 import PoeticCapsule from "./PoeticCapsule";
 
 interface TurnCapsuleProps {
@@ -21,28 +21,26 @@ function urgencyClass(deadlineAt: number | null | undefined, msLeft: number): st
   return "";
 }
 
+/**
+ * The "Stage Light" — center of the status rail. Renders:
+ *  - turn announcement (دور {team}) when no clue yet, or
+ *  - {clue word in continuous shimmer} {count chip} {remaining}
+ * Wrapped in role="status" aria-live="polite" so screen readers announce
+ * the turn change and the clue once it arrives.
+ */
 export default function TurnCapsule({ gs, role, myId }: TurnCapsuleProps) {
   const digits = usePrefsStore((s) => s.digits);
   const deadlineAt = gs.turnDeadlineAt ?? null;
   const msLeft = useCountdown(deadlineAt);
   const turnClass = gs.turn === "red" ? " red" : "";
 
-  // Detect clue arrival to fire the one-shot shimmer animation via key bump
-  const [shimmerKey, setShimmerKey] = useState(0);
-  const prevClueRef = useRef<string | null>(null);
-  useEffect(() => {
-    const w = gs.clue?.w ?? null;
-    if (w && prevClueRef.current !== w) setShimmerKey((k) => k + 1);
-    prevClueRef.current = w;
-  }, [gs.clue?.w]);
-
   const showClue = gs.clue && gs.gphase;
-  const turnName =
+  const turnLabel =
     gs.phase === "ended"
       ? "🏁 انتهت اللعبة"
       : gs.turn === "red"
-        ? `دور ${gs.teamNames.red} 🔴`
-        : `دور ${gs.teamNames.blue} 🔵`;
+        ? gs.teamNames.red
+        : gs.teamNames.blue;
 
   return (
     <div
@@ -53,14 +51,22 @@ export default function TurnCapsule({ gs, role, myId }: TurnCapsuleProps) {
       <div className="turn-line">
         {showClue && gs.clue ? (
           <>
-            <span key={shimmerKey} className="clue-shimmer">{gs.clue.w}</span>
-            <span aria-hidden="true"> · </span>
-            <span>{formatNumber(gs.clue.n, digits)}</span>
-            <span aria-hidden="true"> · </span>
-            <span>تبقّى {formatNumber(gs.gleft, digits)}</span>
+            <span className="clue-shimmer" aria-label={`التلميحة: ${gs.clue.w}`}>
+              {gs.clue.w}
+            </span>
+            <span className="clue-chip" aria-label={`عدد الكلمات: ${gs.clue.n}`}>
+              {formatNumber(gs.clue.n, digits)}
+            </span>
+            <span className="remaining" aria-label={`تبقّى ${gs.gleft}`}>
+              تبقّى {formatNumber(gs.gleft, digits)}
+            </span>
           </>
+        ) : gs.phase === "ended" ? (
+          <span>{turnLabel}</span>
         ) : (
-          turnName
+          <span>
+            دور {turnLabel} <TeamGlyph team={gs.turn} />
+          </span>
         )}
       </div>
       <PoeticCapsule gs={gs} role={role} myId={myId} />

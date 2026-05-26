@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import StatusStrip from "@/components/game/StatusStrip";
 import BoardStage from "@/components/game/BoardStage";
 import ActionDock from "@/components/game/ActionDock";
 import CoachMarks from "@/components/onboarding/CoachMarks";
-import GameLog from "@/components/game/GameLog";
+import HistoryTape from "@/components/game/HistoryTape";
+import type { Team } from "@/lib/types";
 import { hLeader, myRole, myTurn } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
 import { usePrefsStore } from "@/store/prefsStore";
@@ -53,6 +54,16 @@ export default function GameScreen() {
   const leaderName = hLeader(gs);
   const leaderInitial = leaderName ? (Array.from(leaderName)[0] ?? null) : null;
 
+  // Build a name → team lookup so the HistoryTape can color hit/miss rows by
+  // the actor's team (server log lines don't include team identity).
+  const playerTeams = useMemo<Record<string, Team>>(() => {
+    const map: Record<string, Team> = {};
+    for (const p of Object.values(gs.players)) {
+      if (p.team) map[p.name] = p.team;
+    }
+    return map;
+  }, [gs.players]);
+
   return (
     <div
       className="screen game-on"
@@ -78,6 +89,9 @@ export default function GameScreen() {
           isMyTurn={isMyTurn}
           leaderInitial={leaderInitial}
         />
+        {/* HistoryTape fills the flexible row between the board and the dock.
+         * Always-visible scrollable timeline; uses available vertical space. */}
+        <HistoryTape log={gs.log ?? []} teamNames={gs.teamNames} playerTeams={playerTeams} />
         <ActionDock
           gs={gs}
           role={role}
@@ -86,7 +100,6 @@ export default function GameScreen() {
           isMyTurn={isMyTurn}
         />
       </div>
-      <GameLog log={gs.log ?? []} />
       {gs.phase === "ended" && <WinModal gs={gs} />}
     </div>
   );

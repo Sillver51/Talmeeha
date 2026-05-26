@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Check, HelpCircle, SkipForward } from "lucide-react";
 import { useGameStore } from "@/store/gameStore";
 import { Button } from "@/components/ui/button";
 
@@ -29,11 +30,14 @@ export default function GuesserActions() {
           size="default"
           aria-pressed={doubtMode}
           onClick={toggleDoubtMode}
+          aria-label={doubtMode ? "إيقاف وضع الشك" : "تشغيل وضع الشك"}
         >
-          {doubtMode ? "✅ وضع الشك" : "🤔 علامة شك"}
+          {doubtMode
+            ? <><Check size={16} aria-hidden="true" /> وضع الشك</>
+            : <><HelpCircle size={16} aria-hidden="true" /> علامة شك</>}
         </Button>
         <Button variant="danger" size="default" onClick={endTurn}>
-          ⏭ إنهاء الدور
+          <SkipForward size={16} aria-hidden="true" /> إنهاء الدور
         </Button>
       </div>
       <div className="hint">
