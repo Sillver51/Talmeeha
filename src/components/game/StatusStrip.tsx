@@ -1,19 +1,15 @@
 "use client";
 
-import { Crown, Eye, EyeOff, Settings } from "lucide-react";
-import type { PlayerView, Team } from "@/lib/types";
+import { Eye, EyeOff, Settings } from "lucide-react";
+import type { PlayerView } from "@/lib/types";
 import type { Role } from "@/lib/ui/roles";
-import TeamGlyph from "@/components/brand/TeamGlyph";
+import type { LogEvent } from "@/lib/game/logParser";
 import { Button } from "@/components/ui/button";
-import { usePrefsStore } from "@/store/prefsStore";
 import { useGameStore } from "@/store/gameStore";
-import { formatNumber, type DigitStyle } from "@/lib/i18n/digits";
-
-/** Compact, monochrome crown chip rendered inline before the wins number. */
-const CrownIcon = () => (
-  <Crown size={11} aria-hidden="true" focusable="false" strokeWidth={2.5} />
-);
-import TurnCapsule from "./TurnCapsule";
+import { useCountdown } from "@/lib/time/useCountdown";
+import ArcDial from "./ArcDial";
+import Headline from "./Headline";
+import VoiceStrand from "./VoiceStrand";
 
 interface StatusStripProps {
   gs: PlayerView;
@@ -22,56 +18,54 @@ interface StatusStripProps {
   isHost: boolean;
   winsRed: number;
   winsBlue: number;
+  /** Newest parsed log entry (computed once in GameScreen). */
+  lastEvent: LogEvent | null;
 }
 
 /**
- * The top rail of the Night Stage.
+ * Top rail of the Night Stage — the "Pulse" redesign.
  *
- * Two "tally stones" (score capsules) flank the central turn capsule. The
- * active team's stone lights up with a team-color ring + soft halo and a
- * micro-lift; the idle stone stays matte. A dot bar under each numeral shows
- * remaining unrevealed cards as the team glyph — color-independent identity.
- * The leading team (by wins) shows a crown chip instead of a plain wins pill.
+ *   [ARC-RED]   [HEADLINE (5 moment states)]   [ARC-BLUE]
+ *               [VOICE STRAND]
+ *               [HOST TRAY (when host)]
  *
- * Host action chips inline as a 4th grid column at ≥720px (via @container);
- * below that they wrap into a tray row.
+ * No game logic here — purely compositional. State/server reads happen
+ * inside the children; the strip just routes props.
  */
 export default function StatusStrip({
-  gs, role, myId, isHost, winsRed, winsBlue,
+  gs, role, myId, isHost, winsRed, winsBlue, lastEvent,
 }: StatusStripProps) {
-  const digits = usePrefsStore((s) => s.digits);
   const hostViewLeader = useGameStore((s) => s.hostViewLeader);
   const toggleHostView = useGameStore((s) => s.toggleHostView);
   const goToSetup = () => useGameStore.setState({ clientScreen: "setup" });
 
+  const msLeft = useCountdown(gs.turnDeadlineAt ?? null);
   const activeTeam = gs.phase === "playing" ? gs.turn : null;
-  const leader: Team | null =
-    winsRed === winsBlue ? null : winsRed > winsBlue ? "red" : "blue";
 
   return (
     <header className="status-strip" role="banner">
-      <TallyStone
-        team="red"
-        remaining={gs.sRed ?? 0}
-        wins={winsRed}
-        teamName={gs.teamNames.red}
-        digits={digits}
-        active={activeTeam === "red"}
-        leader={leader === "red"}
-      />
-      <TurnCapsule gs={gs} role={role} myId={myId} />
-      <TallyStone
-        team="blue"
-        remaining={gs.sBlue ?? 0}
-        wins={winsBlue}
-        teamName={gs.teamNames.blue}
-        digits={digits}
-        active={activeTeam === "blue"}
-        leader={leader === "blue"}
-      />
+      <div className="status-rail">
+        <ArcDial
+          team="red"
+          remaining={gs.sRed ?? 0}
+          wins={winsRed}
+          teamName={gs.teamNames.red}
+          active={activeTeam === "red"}
+        />
+        <Headline gs={gs} lastEvent={lastEvent} msLeft={msLeft} />
+        <ArcDial
+          team="blue"
+          remaining={gs.sBlue ?? 0}
+          wins={winsBlue}
+          teamName={gs.teamNames.blue}
+          active={activeTeam === "blue"}
+        />
+      </div>
+
+      <VoiceStrand gs={gs} role={role} myId={myId} lastEvent={lastEvent} />
 
       {isHost && (
-        <div className="ss-actions">
+        <div className="host-tray">
           <Button
             variant="ghost"
             size="xs"
@@ -89,55 +83,5 @@ export default function StatusStrip({
         </div>
       )}
     </header>
-  );
-}
-
-interface TallyStoneProps {
-  team: Team;
-  remaining: number;
-  wins: number;
-  teamName: string;
-  digits: DigitStyle;
-  active: boolean;
-  leader: boolean;
-}
-
-function TallyStone({
-  team, remaining, wins, teamName, digits, active, leader,
-}: TallyStoneProps) {
-  // Initial board sizes are 9 (red, goes first) and 8 (blue) — derive a
-  // safe max for the dot bar from the remaining count if it's higher, so
-  // a non-default configuration still renders gracefully.
-  const dotMax = team === "red" ? Math.max(9, remaining) : Math.max(8, remaining);
-
-  return (
-    <div
-      className={`ss-score ${team}${active ? " active" : ""}`}
-      data-team={team}
-      aria-label={`نقاط ${teamName}: ${remaining}، انتصارات: ${wins}`}
-    >
-      <div className="n" aria-hidden="false">{formatNumber(remaining, digits)}</div>
-
-      <div className="ss-dots" aria-hidden="true">
-        {Array.from({ length: dotMax }, (_, i) => (
-          <span key={i} className={`d${i < remaining ? " lit" : ""}`}>
-            <TeamGlyph team={team} />
-          </span>
-        ))}
-      </div>
-
-      <div className="team-row">
-        <TeamGlyph team={team} />
-        <span className="team-name">{teamName}</span>
-      </div>
-
-      <span
-        className={leader ? "wins crown" : "wins"}
-        aria-label={`الانتصارات: ${wins}`}
-      >
-        {leader ? <CrownIcon /> : null}
-        {formatNumber(wins, digits)}
-      </span>
-    </div>
   );
 }
