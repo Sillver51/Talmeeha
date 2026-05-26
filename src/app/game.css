@@ -21,220 +21,301 @@
   container-type: inline-size;
 }
 
-/* ─── STATUS STRIP — "Night Stage" rail ─── */
-/* Two glass tally-stones flank the turn capsule. On the active team's stone
- * the team-color ring lights up and a halo blooms; the idle stone stays
- * matte. The host action row inlines into a 4th column at md+.
- * Contain the rail's layout/style/paint so changing turn doesn't reflow
- * downstream zones. */
+/* ============================================================
+ * Status rail — "Pulse" redesign
+ * Layout:
+ *   .status-strip       outer container (sticky, vertical stack)
+ *     .status-rail      horizontal row: [arc] [headline] [arc]
+ *     .voice-strand     featured poetic line below the rail
+ *     .host-tray        host-only action chips
+ * ============================================================ */
 .status-strip {
   position: sticky; top: 0; z-index: 5;
+  display: flex; flex-direction: column; gap: .35rem;
+  padding-block: .5rem .35rem;
+  contain: layout style;
+}
+
+.status-rail {
   display: grid;
-  grid-template-columns: minmax(78px, .8fr) minmax(0, 2fr) minmax(78px, .8fr);
-  align-items: stretch; gap: .5rem;
-  background: linear-gradient(180deg, rgba(20,20,40,.92) 0%, rgba(16,16,32,.88) 100%);
-  backdrop-filter: blur(16px) saturate(1.1);
-  border: 1px solid var(--border2); border-radius: var(--r);
-  padding: .5rem .6rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,.5);
-  contain: layout style;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: .75rem;
 }
 
-/* ── Score Tally Stone ── */
-.ss-score{
+/* ----- ArcDial ---------------------------------------------- */
+.arc-dial {
   position: relative;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .12rem;
-  padding: .35rem .25rem .4rem;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%);
-  border: 1px solid var(--border2);
-  border-radius: var(--r-sm);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-  min-width: 0;
-  transition: border-color .3s, box-shadow .3s, transform .3s;
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  transition: transform 220ms ease, filter 220ms ease;
+  filter: saturate(.5) brightness(.85);
+  --arc-color: var(--text2);
 }
-.ss-score .n{
-  font-size: clamp(1.7rem, 3.4vw, 2.4rem); font-weight: 900; line-height: .9;
-  letter-spacing: -1.5px;
-  text-shadow: 0 0 18px var(--ss-glow, currentColor),
-               0 1px 0 rgba(0,0,0,.6);
-}
-.ss-score.red  { color: var(--red);  --ss-glow: rgba(255,77,141,.55); }
-.ss-score.blue { color: var(--blue); --ss-glow: rgba(52,168,255,.55); }
+.arc-dial.red  { --arc-color: var(--red, #FF4D8D); }
+.arc-dial.blue { --arc-color: var(--blue, #34A8FF); }
 
-.ss-score .team-row{
-  display: flex; align-items: center; justify-content: center; gap: .25rem;
-  font-size: .72rem; font-weight: 800;
-  color: var(--text);
-  max-width: 100%;
+.arc-dial.active {
+  filter: none;
+  transform: scale(1.04);
 }
-.ss-score .team-row .team-name{
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  max-width: 8ch;
-}
-.ss-score .wins{
-  font-size: .58rem; font-weight: 800; letter-spacing: .2px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 20px;
-  padding: .08rem .5rem;
-  color: var(--text);
-  white-space: nowrap;
-}
-.ss-score .wins.crown{
-  background: linear-gradient(90deg, rgba(232,160,32,.22), rgba(255,208,96,.16));
-  border-color: rgba(255,208,96,.5);
-  color: #FFE5A8;
+.arc-dial.active::after {
+  content: "";
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  box-shadow: 0 0 16px color-mix(in oklab, var(--arc-color) 55%, transparent);
+  pointer-events: none;
 }
 
-/* Active stone: ring lights up, soft outer halo, micro-lift */
-.ss-score.active{
-  border-color: var(--ss-glow, transparent);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.10),
-    0 0 0 1px var(--ss-glow, transparent),
-    0 0 24px var(--ss-glow, transparent);
-  transform: translateY(-1px);
+.arc-svg { display: block; }
+.arc-bg {
+  stroke: color-mix(in oklab, var(--arc-color) 18%, transparent);
+}
+.arc-fg {
+  stroke: var(--arc-color);
+  transition: stroke-dashoffset 320ms cubic-bezier(.2,.7,.2,1);
 }
 
-/* Dot bar (remaining unrevealed for that team). Each dot uses the team glyph;
- * dim when consumed, lit + ring when remaining. Aria-hidden — server-true
- * counts also render in the team-row "n" for SRs. */
-.ss-dots{
-  display: flex; justify-content: center; gap: .14rem;
-  margin-top: .12rem; line-height: 1;
-}
-.ss-dots .d{
-  font-size: .58rem; font-weight: 900;
-  color: var(--text2); opacity: .35;
-  transition: opacity .25s, color .25s, transform .25s;
-}
-.ss-dots .d.lit{
-  color: currentColor;
-  opacity: 1;
-  text-shadow: 0 0 6px var(--ss-glow, transparent);
+.arc-glyph {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  color: var(--arc-color);
+  font-size: 1.05rem; line-height: 1;
+  text-shadow: 0 0 6px color-mix(in oklab, var(--arc-color) 60%, transparent);
 }
 
-/* Host action chips inline at strip end (replaces the wrapped row).
- * On narrow widths we move them under the strip in a tray. */
-.ss-actions{
-  grid-column: 1 / -1;
-  display: flex; gap: .3rem; justify-content: center;
-  padding-top: .25rem;
+.arc-ticks {
+  position: absolute;
+  inset-block-start: -8px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 3px;
+  pointer-events: none;
 }
-@container (min-width: 720px){
-  .status-strip{ grid-template-columns: minmax(78px,.8fr) minmax(0,2fr) minmax(78px,.8fr) auto; }
-  .ss-actions{ grid-column: auto; padding-top: 0; align-items: center; }
+.arc-tick {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--arc-color) 25%, transparent);
+  transition: background 220ms ease, transform 220ms ease;
 }
-
-/* ─── TURN CAPSULE — "Stage Light" ─── */
-/* Promoted typography (turn-line + sub-line) at full opacity so the poetic
- * phrase becomes a feature, not a footnote. Continuous slow shimmer on the
- * clue word (8s loop, non-strobing). Urgency uses a thin gold pixel-stroke
- * + scale tween instead of soft glow so it reads against the glass. */
-.turn-capsule {
-  position: relative; overflow: hidden;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .2rem;
-  background:
-    linear-gradient(180deg, rgba(52,168,255,.14) 0%, rgba(52,168,255,.06) 100%);
-  border: 1.5px solid var(--blue);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 0 22px rgba(52,168,255,.30);
-  border-radius: var(--r-sm);
-  padding: .5rem .85rem;
-  text-align: center; min-width: 0;
-  transition: background .3s, border-color .3s, box-shadow .3s;
-  contain: layout style;
+.arc-tick.lit {
+  background: var(--arc-color);
+  box-shadow: 0 0 4px color-mix(in oklab, var(--arc-color) 70%, transparent);
 }
-.turn-capsule.red {
-  background:
-    linear-gradient(180deg, rgba(255,77,141,.16) 0%, rgba(255,77,141,.06) 100%);
-  border-color: var(--red);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 0 22px rgba(255,77,141,.30);
-}
-.turn-capsule .turn-line {
-  font-weight: 900;
-  font-size: clamp(.95rem, 2.6vw, 1.15rem);
-  letter-spacing: .2px;
-  color: var(--text);
-  text-shadow: 0 1px 0 rgba(0,0,0,.5);
-  line-height: 1.1;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 100%;
-}
-.turn-capsule .sub-line {
-  font-size: clamp(.7rem, 1.8vw, .82rem);
-  font-weight: 600; font-style: italic;
-  color: var(--text);
-  opacity: .9;
-  min-height: .9rem;
-  letter-spacing: .15px;
-}
-
-/* Clue shimmer — continuous slow loop (8s). Reduced-motion freezes the
- * gradient mid-loop via a paused animation, keeping the gradient legible. */
-.turn-capsule .clue-shimmer {
-  display: inline-block;
-  font-weight: 900; font-size: clamp(1.05rem, 2.6vw, 1.25rem); letter-spacing: .5px;
-  background: linear-gradient(110deg,
-    var(--grape2) 0%, var(--gold2) 33%, var(--cyan, #34E0E0) 66%, var(--grape2) 100%);
-  background-size: 300% 100%;
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-  animation: clueShimmerLoop 8s linear infinite;
-  will-change: background-position;
-}
-@keyframes clueShimmerLoop {
-  from { background-position: 0% 0%; }
-  to   { background-position: 300% 0%; }
-}
-.turn-capsule .clue-chip{
-  display: inline-block;
-  background: var(--gold-dim);
-  border: 1px solid rgba(255,208,96,.45);
-  color: var(--gold2);
-  font-weight: 900;
+.arc-overflow {
+  font-size: .58rem;
+  font-weight: 800;
+  color: var(--arc-color);
+  background: color-mix(in oklab, var(--arc-color) 18%, transparent);
   border-radius: 999px;
-  padding: 0 .55rem;
-  font-size: .82rem;
-  margin-inline-start: .3rem;
-  vertical-align: middle;
-}
-.turn-capsule .remaining {
-  font-weight: 700;
-  color: var(--text);
-  opacity: .9;
-  margin-inline-start: .3rem;
-  font-size: .85rem;
+  padding: 1px 6px;
+  line-height: 1.2;
 }
 
-/* Urgency: thin gold pixel-stroke + scale, no soft strobe */
-.turn-capsule.urgency-soft {
-  border-color: rgba(255,208,96,.85);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 0 0 1px rgba(255,208,96,.55);
-  animation: capsuleUrgencySoft 1.2s ease-in-out infinite;
+/* ----- Headline --------------------------------------------- */
+.headline {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: .15rem;
+  padding: .45rem .6rem;
+  min-height: 3rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,.04),
+    rgba(255,255,255,.02) 60%,
+    transparent);
+  border: 1px solid var(--border2, rgba(255,255,255,.06));
+  overflow: hidden;
 }
-.turn-capsule.urgency-hard {
-  border-color: var(--gold);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 0 0 1.5px var(--gold);
-  animation: capsuleUrgencyHard .55s ease-in-out infinite;
+
+.headline .hl-line {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-weight: 900;
+  font-size: clamp(.95rem, 2.6vw, 1.1rem);
+  line-height: 1.2;
+  text-align: center;
 }
-@keyframes capsuleUrgencySoft {
-  0%,100% { transform: scale(1); }
-  50%     { transform: scale(1.008); }
+
+.headline.moment-awaiting-clue .hl-line.awaiting {
+  font-weight: 800;
 }
-@keyframes capsuleUrgencyHard {
-  0%,100% { transform: scale(1); }
-  50%     { transform: scale(1.014); }
+.headline .hl-leader {
+  position: relative;
+  font-weight: 900;
+  padding-block-end: 2px;
+}
+.headline .hl-leader::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0; inset-block-end: 0;
+  block-size: 2px; border-radius: 2px;
+  background: var(--team-c, var(--grape, #B084FF));
+  animation: hl-leader-pulse 2s ease-in-out infinite;
+}
+.headline[data-team="red"] .hl-leader { --team-c: var(--red); }
+.headline[data-team="blue"] .hl-leader { --team-c: var(--blue); }
+@keyframes hl-leader-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+.headline .hl-clue.clue-shimmer {
+  font-weight: 900;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  background: linear-gradient(90deg,
+    var(--text) 0%, var(--gold, #E0C070) 50%, var(--text) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hl-shimmer 8s linear infinite;
+}
+@keyframes hl-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.headline .hl-count {
+  display: inline-grid; place-items: center;
+  min-width: 1.5rem; padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 900; font-size: .8rem;
+  background: var(--team-c, var(--grape));
+  color: #fff;
+}
+.headline[data-team="red"]  .hl-count { background: var(--red); }
+.headline[data-team="blue"] .hl-count { background: var(--blue); }
+
+.headline .hl-sub {
+  display: inline-flex; align-items: baseline; gap: .5rem;
+  font-weight: 600; font-size: .85rem;
+  color: var(--text2, rgba(240,240,240,.85));
+}
+.headline .hl-remaining-n { font-weight: 800; color: var(--text); }
+
+.headline.urgency {
+  outline: 1px solid var(--gold, #E0C070);
+  outline-offset: -1px;
+  animation: hl-urgency-pulse 2s ease-in-out infinite;
+}
+.headline.urgency-hard {
+  animation: none;
+  outline-width: 1px;
+  outline-color: var(--gold);
+}
+@keyframes hl-urgency-pulse {
+  0%, 100% { outline-color: var(--gold); }
+  50%      { outline-color: color-mix(in oklab, var(--gold) 60%, transparent); }
+}
+.headline .hl-countdown {
+  font-weight: 700; color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  transition: transform 150ms ease;
+}
+.headline.urgency-hard .hl-countdown { transform: scale(1.1); }
+
+.headline.shake { animation: hl-shake 150ms ease-in-out 3; }
+@keyframes hl-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-2px); }
+  75%      { transform: translateX(2px); }
+}
+
+/* Reveal burst ------------------------------------------------ */
+.reveal-burst {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  display: grid; place-items: center;
+}
+.reveal-burst .spark {
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: spark-fly 600ms ease-out forwards;
+}
+.reveal-burst.burst-red .spark    { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.reveal-burst.burst-blue .spark   { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
+.reveal-burst.burst-neutral .spark{ background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+.reveal-burst.burst-assassin .spark{ background: #FF3358; box-shadow: 0 0 6px #FF3358; }
+
+.reveal-burst .s0 { --dx:  18px; --dy: -10px; animation-delay: 0ms; }
+.reveal-burst .s1 { --dx: -18px; --dy: -10px; animation-delay: 30ms; }
+.reveal-burst .s2 { --dx:  22px; --dy:   6px; animation-delay: 60ms; }
+.reveal-burst .s3 { --dx: -22px; --dy:   6px; animation-delay: 90ms; }
+.reveal-burst .s4 { --dx:   0px; --dy: -22px; animation-delay: 120ms; }
+.reveal-burst .s5 { --dx:   0px; --dy:  18px; animation-delay: 150ms; }
+
+@keyframes spark-fly {
+  from { transform: translate(0, 0) scale(.4); opacity: 0; }
+  20%  { opacity: 1; }
+  to   { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+
+/* ----- Voice strand ----------------------------------------- */
+.voice-strand {
+  display: block;
+  text-align: center;
+  min-height: 1.25rem;
+  font-family: inherit;
+}
+.voice-strand .voice-line {
+  display: inline-block;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(.78rem, 2.2vw, .9rem);
+  color: var(--text2, rgba(240,240,240,.92));
+  max-width: 60ch;
+  animation: voice-in 280ms cubic-bezier(.2,.7,.2,1);
+}
+@keyframes voice-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----- Host tray -------------------------------------------- */
+.host-tray {
+  display: flex; justify-content: flex-end; gap: .3rem;
+  padding-inline: .25rem;
+}
+
+/* Reduced motion --------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .headline .hl-clue.clue-shimmer { animation: none; background: var(--text); -webkit-background-clip: initial; background-clip: initial; color: var(--text); }
+  .headline.urgency, .headline.shake, .headline .hl-leader::after { animation: none; }
+  .arc-fg { transition: none; }
+  .reveal-burst .spark { animation: none; opacity: 0; }
+  .voice-strand .voice-line { animation: none; }
+}
+[data-reduced-motion="on"] .headline .hl-clue.clue-shimmer,
+[data-reduced-motion="on"] .headline.urgency,
+[data-reduced-motion="on"] .headline.shake,
+[data-reduced-motion="on"] .headline .hl-leader::after,
+[data-reduced-motion="on"] .voice-strand .voice-line,
+[data-reduced-motion="on"] .arc-fg,
+[data-reduced-motion="on"] .reveal-burst .spark {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Responsive ------------------------------------------------- */
+@media (max-width: 640px) {
+  .status-rail {
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    gap: .5rem;
+  }
+  .arc-dial { width: 48px; height: 48px; }
+  .arc-glyph { font-size: .95rem; }
+  .arc-ticks { inset-block-start: -7px; gap: 2px; }
+  .arc-tick { width: 3px; height: 3px; }
+  .headline { min-height: 2.6rem; padding: .35rem .5rem; }
+  .voice-strand .voice-line { font-size: .78rem; }
+}
+@media (max-width: 360px) {
+  .arc-ticks { display: none; }
+  .arc-dial .arc-overflow {
+    position: absolute; inset-block-start: -6px; inset-inline-start: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 /* ─── BOARD STAGE ─── */
@@ -512,22 +593,18 @@ html[dir="rtl"] .hand-pass {
  * data-attribute selector reuses the same list. Lower specificity, less
  * duplication. (Previously a 13-element selector chain repeated twice.) */
 @media (prefers-reduced-motion: reduce) {
-  :is(.turn-capsule, .turn-capsule.urgency-soft, .turn-capsule.urgency-hard,
-      .board-stage::before, .constellation,
+  :is(.board-stage::before, .constellation,
       .wc.reveal-flip, .wc.shake, .calligraphy > span,
-      .initial-flash, .doubt-aura, .hand-pass,
-      .turn-capsule .clue-shimmer) {
+      .initial-flash, .doubt-aura, .hand-pass) {
     animation: none !important;
     transition: none !important;
   }
   .calligraphy > span { opacity: 1; transform: none; }
 }
 [data-reduced-motion="on"]
-  :is(.turn-capsule, .turn-capsule.urgency-soft, .turn-capsule.urgency-hard,
-      .constellation,
+  :is(.constellation,
       .wc.reveal-flip, .wc.shake, .calligraphy > span,
-      .initial-flash, .doubt-aura, .hand-pass,
-      .turn-capsule .clue-shimmer) {
+      .initial-flash, .doubt-aura, .hand-pass) {
   animation: none !important;
   transition: none !important;
 }
@@ -545,34 +622,6 @@ html[dir="rtl"] .hand-pass {
  *   medium (640–1023): scores top corners, capsule fills middle;
  *   wide   (≥1024): scores flank capsule, dock single-row.
  * The .game-zones container already declares container-type: inline-size. */
-
-/* Small: <640 — strip stacks; tally numerals shrink; dot bar gets tighter */
-@container (max-width: 640px) {
-  .status-strip {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: .4rem;
-    padding: .45rem .55rem;
-  }
-  .status-strip .turn-capsule { grid-column: 1 / -1; grid-row: 2; }
-  /* In RTL grid col 1 is visually on the right. Red sits at col 1 to match
-   * the default wide layout (red right, blue left). */
-  .ss-score.red  { grid-column: 1; grid-row: 1; }
-  .ss-score.blue { grid-column: 2; grid-row: 1; }
-  .ss-actions { grid-row: 3; padding-top: .15rem; }
-  .ss-score{ padding: .35rem .35rem .4rem; }
-  .ss-score .n{ font-size: clamp(1.55rem, 6vw, 2rem); }
-  .ss-score .team-row{ font-size: .68rem; }
-  .ss-score .wins{ font-size: .55rem; padding: .05rem .4rem; }
-  .ss-dots{ gap: .1rem; }
-  .ss-dots .d{ font-size: .5rem; }
-  .turn-capsule{ padding: .42rem .6rem; }
-}
-@container (max-width: 360px) {
-  .ss-score .team-row .team-name{ max-width: 4ch; }
-  .ss-score .wins:not(.crown){ display: none; }
-  .ss-dots .d{ font-size: .44rem; }
-}
 
 /* Dock — narrow screens: 2-row composer.
  * Row A spans the input full-width; Row B = stepper + CTA.
@@ -609,8 +658,7 @@ html[dir="rtl"] .hand-pass {
 /* Performance: paint-contain stable zones so a card flip doesn't repaint
  * adjacent chrome. content-visibility on the log keeps off-screen items
  * out of layout (game log can grow). */
-.action-dock,
-.status-strip { contain: layout style; }
+.action-dock { contain: layout style; }
 .board-stage { contain: layout style; }   /* paint not contained — glow bleeds */
 /* ─── HISTORY TAPE — always-visible scrollable timeline ───
  * Sits in the flexible grid row between board and dock. The tape itself is
