@@ -1,0 +1,290 @@
+/* game.css — scoped to .game-on (in-game screen).
+ * Lives outside @layer to keep priority equal to the legacy hand-built styles
+ * in globals.css. Owns: status strip, board stage, action dock, glass word
+ * cards, reveal flip, Arabic calligraphy cascade, ambient stage glow,
+ * capsule timer pulse.
+ */
+
+/* ─── STAGE ROOT ─── */
+.game-on { gap: .5rem; }
+.game-on .game-zones {
+  display: grid; grid-template-rows: auto 1fr auto; gap: .5rem;
+  flex: 1; min-height: 0; width: 100%;
+}
+
+/* ─── STATUS STRIP ─── */
+.status-strip {
+  position: sticky; top: 0; z-index: 5;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .55rem;
+  background: rgba(18,18,36,.92); backdrop-filter: blur(16px);
+  border: 1px solid var(--border2); border-radius: var(--r);
+  padding: .55rem .8rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+}
+.ss-score { text-align: center; min-width: 64px; }
+.ss-score .n { font-size: 1.7rem; font-weight: 900; line-height: 1; text-shadow: 0 0 16px currentColor; }
+.ss-score.red { color: var(--red2); }
+.ss-score.blue { color: var(--blue2); }
+.ss-score .glyph-row {
+  font-size: .55rem; opacity: .85; margin-top: .15rem;
+  display: flex; justify-content: center; gap: .25rem; align-items: center;
+  color: var(--text2);
+}
+.ss-score .wins {
+  font-size: .55rem;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+  border-radius: 20px; padding: .07rem .55rem; margin-top: .2rem;
+  display: inline-block; color: var(--text2); font-weight: 700;
+}
+.ss-actions { display: flex; gap: .35rem; }
+
+/* ─── TURN CAPSULE ─── */
+.turn-capsule {
+  position: relative; overflow: hidden;
+  background: rgba(45,110,255,.14); border: 1.5px solid var(--blue);
+  box-shadow: 0 0 18px rgba(52,168,255,.28), inset 0 0 14px rgba(52,168,255,.07);
+  border-radius: 11px;
+  padding: .42rem .7rem; text-align: center;
+  transition: background-color .3s, border-color .3s, box-shadow .3s;
+}
+.turn-capsule.red {
+  background: rgba(255,77,141,.14); border-color: var(--red);
+  box-shadow: 0 0 18px rgba(255,77,141,.28), inset 0 0 14px rgba(255,77,141,.07);
+}
+.turn-capsule .turn-line { font-weight: 900; font-size: .82rem; letter-spacing: .2px; }
+.turn-capsule .sub-line { font-size: .62rem; opacity: .88; margin-top: .14rem; min-height: .9rem; }
+.turn-capsule .clue-shimmer {
+  display: inline-block;
+  font-weight: 900; font-size: 1rem; letter-spacing: .5px;
+  background: linear-gradient(110deg, var(--grape2) 10%, var(--gold2) 50%, var(--cyan, #34E0E0) 90%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: clueShimmer 1.6s ease-in-out 1;
+}
+@keyframes clueShimmer { from { background-position: 0 0; } to { background-position: 200% 0; } }
+.turn-capsule.urgency-soft { animation: capsuleUrgencySoft 1s ease-in-out infinite; }
+.turn-capsule.urgency-hard { animation: capsuleUrgencyHard .5s ease-in-out infinite; border-color: var(--gold); }
+@keyframes capsuleUrgencySoft { 0%,100% { box-shadow: 0 0 12px currentColor; } 50% { box-shadow: 0 0 22px currentColor; } }
+@keyframes capsuleUrgencyHard {
+  0%,100% { box-shadow: 0 0 16px var(--gold); transform: scale(1); }
+  50%     { box-shadow: 0 0 28px var(--gold); transform: scale(1.01); }
+}
+
+/* ─── BOARD STAGE ─── */
+.board-stage {
+  position: relative; flex: 1; min-height: 0;
+  background: rgba(10,10,20,.4);
+  border-radius: var(--r); padding: .55rem;
+  overflow: hidden;
+}
+.board-stage::before {
+  content: ''; position: absolute; inset: -25%; pointer-events: none;
+  background: radial-gradient(ellipse, var(--stage-glow, rgba(52,168,255,.10)) 0%, transparent 55%);
+  animation: stagePulse 7s ease-in-out infinite;
+}
+.board-stage.team-red  { --stage-glow: rgba(255,77,141,.10); }
+.board-stage.team-blue { --stage-glow: rgba(52,168,255,.10); }
+@keyframes stagePulse {
+  0%,100% { opacity: .5; transform: scale(1); }
+  50%     { opacity: 1;  transform: scale(1.05); }
+}
+
+/* Faint Arabic letter constellation behind the board */
+.constellation {
+  position: absolute; inset: 0; pointer-events: none;
+  opacity: .06; color: var(--text);
+  animation: constBreath 7s ease-in-out infinite;
+}
+@keyframes constBreath {
+  0%,100% { opacity: .04; }
+  50%     { opacity: .09; }
+}
+
+/* Leader-key personal initial flash — overlays the board center */
+.initial-flash {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  pointer-events: none; font-size: 9rem; font-weight: 900;
+  color: var(--gold2); opacity: 0; z-index: 2;
+  text-shadow: 0 0 32px rgba(232,160,32,.6);
+  animation: initialFlash 1s ease-in-out 1;
+}
+@keyframes initialFlash {
+  0%,100% { opacity: 0; transform: scale(.8); }
+  35%,65% { opacity: .35; transform: scale(1); }
+}
+
+/* ─── GLASS WORD CARDS ─── */
+.wc.glass {
+  background: rgba(255,255,255,.045); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 6px rgba(0,0,0,.3);
+  color: var(--text);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s, border-color .22s;
+}
+.wc.glass[role="button"]:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: rgba(167,139,250,.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 6px 18px rgba(139,92,246,.4);
+}
+
+/* Reveal flip */
+.board { perspective: 1000px; }
+.wc.reveal-flip {
+  animation: wcFlip 350ms cubic-bezier(.34,1.56,.64,1) both;
+  transform-style: preserve-3d; will-change: transform;
+}
+@keyframes wcFlip {
+  0%   { transform: rotateY(0); }
+  100% { transform: rotateY(0deg) scale(1); }
+}
+/* True flip would require a 2-face layout; we use a "pop" + bloom that
+ * reads as a flip without the double-face complexity. */
+@keyframes wcFlip {
+  0%   { transform: scale(.96) rotateY(-12deg); opacity: .85; }
+  60%  { transform: scale(1.05) rotateY(8deg); opacity: 1; }
+  100% { transform: scale(1) rotateY(0); opacity: 1; }
+}
+
+/* Wrong-color shake */
+.wc.shake { animation: wcShake 240ms ease-in-out 1; }
+@keyframes wcShake {
+  0%,100% { transform: translateX(0); }
+  25%     { transform: translateX(-3px); }
+  50%     { transform: translateX(3px); }
+  75%     { transform: translateX(-3px); }
+}
+
+/* Calligraphy cascade — per-letter spans get `--i` */
+.calligraphy { display: inline-flex; gap: 0; }
+.calligraphy > span {
+  opacity: 0; transform: translateX(6px);
+  animation: letterIn 240ms ease-out forwards;
+  animation-delay: calc(var(--i) * 30ms);
+  display: inline-block;
+}
+@keyframes letterIn {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Doubt aura — emitted when guesser toggles doubt mode */
+.doubt-aura {
+  position: fixed; inset: 0; pointer-events: none; z-index: 2;
+  background: radial-gradient(ellipse at center, rgba(168,85,247,.18) 0%, transparent 60%);
+  opacity: 0; animation: doubtAura 600ms ease-out 1;
+}
+@keyframes doubtAura {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ─── ACTION DOCK ─── */
+.action-dock {
+  position: sticky; bottom: 0; z-index: 5;
+  background: rgba(18,18,36,.95); backdrop-filter: blur(16px);
+  border: 1px solid var(--border2); border-radius: var(--r);
+  padding: .55rem .8rem;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.5);
+  transition: padding .24s cubic-bezier(.34,1.56,.64,1);
+}
+.action-dock.collapsed { padding: .25rem .8rem; }
+.action-dock .row {
+  display: flex; gap: .45rem; align-items: center; flex-wrap: wrap;
+}
+.action-dock .hint {
+  font-size: .62rem; opacity: .75; text-align: center; margin-top: .3rem;
+  color: var(--text2);
+}
+.action-dock input[type="text"],
+.action-dock input[type="number"] {
+  background: rgba(10,10,20,.7); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); padding: .5rem .65rem;
+  color: var(--text); font-family: inherit; font-weight: 600; font-size: .82rem;
+  outline: none; min-width: 0;
+}
+.action-dock input[type="text"]:focus,
+.action-dock input[type="number"]:focus {
+  border-color: var(--grape);
+  box-shadow: 0 0 0 3px rgba(139,92,246,.25);
+}
+.action-dock input[type="number"] {
+  width: 52px; text-align: center; color: var(--gold2); font-weight: 900;
+}
+
+/* Hand-pass animation for host handoff */
+.hand-pass {
+  display: inline-block; font-size: 1.2rem;
+  animation: handPass 2.4s ease-in-out infinite;
+}
+@keyframes handPass {
+  0%,100% { transform: translateX(0); opacity: .85; }
+  50%     { transform: translateX(-22px); opacity: 1; }
+}
+/* Mirror for RTL: in RTL the "start" side is the right, so movement goes the other way */
+html[dir="rtl"] .hand-pass {
+  animation-name: handPassRtl;
+}
+@keyframes handPassRtl {
+  0%,100% { transform: translateX(0); opacity: .85; }
+  50%     { transform: translateX(22px); opacity: 1; }
+}
+
+/* CTA fireworks on send */
+.cta-spark { position: relative; }
+.cta-spark.fire::after {
+  content: ''; position: absolute; inset: -8px; border-radius: 9px; pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 50%, var(--gold2) 0%, transparent 18%),
+    radial-gradient(circle at 80% 50%, var(--grape2) 0%, transparent 18%),
+    radial-gradient(circle at 50% 0%,  var(--gold2) 0%, transparent 16%),
+    radial-gradient(circle at 50% 100%, var(--grape2) 0%, transparent 16%);
+  opacity: 0; animation: ctaFire 400ms ease-out 1;
+}
+@keyframes ctaFire {
+  0%   { opacity: 0; transform: scale(.5); }
+  50%  { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+
+/* ─── REDUCED MOTION FALLBACKS ─── */
+@media (prefers-reduced-motion: reduce) {
+  .turn-capsule, .turn-capsule.urgency-soft, .turn-capsule.urgency-hard,
+  .board-stage::before, .constellation,
+  .wc.reveal-flip, .wc.shake, .calligraphy > span,
+  .initial-flash, .doubt-aura, .hand-pass, .cta-spark.fire::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .calligraphy > span { opacity: 1; transform: none; }
+}
+[data-reduced-motion="on"] .turn-capsule,
+[data-reduced-motion="on"] .turn-capsule.urgency-soft,
+[data-reduced-motion="on"] .turn-capsule.urgency-hard,
+[data-reduced-motion="on"] .board-stage::before,
+[data-reduced-motion="on"] .constellation,
+[data-reduced-motion="on"] .wc.reveal-flip,
+[data-reduced-motion="on"] .wc.shake,
+[data-reduced-motion="on"] .calligraphy > span,
+[data-reduced-motion="on"] .initial-flash,
+[data-reduced-motion="on"] .doubt-aura,
+[data-reduced-motion="on"] .hand-pass,
+[data-reduced-motion="on"] .cta-spark.fire::after {
+  animation: none !important;
+  transition: none !important;
+}
+[data-reduced-motion="on"] .calligraphy > span { opacity: 1; transform: none; }
+
+/* ─── MOBILE TUNING ─── */
+@media (max-width: 520px) {
+  .status-strip { padding: .45rem .55rem; gap: .35rem; }
+  .ss-score .n { font-size: 1.45rem; }
+  .turn-capsule .turn-line { font-size: .74rem; }
+  .turn-capsule .sub-line { font-size: .58rem; }
+  .action-dock { padding: .45rem .55rem; }
+  .initial-flash { font-size: 6rem; }
+}
+@media (max-width: 360px) {
+  .ss-score { min-width: 50px; }
+  .ss-score .wins { display: none; }
+}

@@ -3,6 +3,7 @@
    vanilla styles below remain intact (coexistence, not a rip-out). */
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./game.css";
 
 /* Inlined from shadcn's `dist/tailwind.css` (the radix-nova registry stylesheet).
    It was previously pulled in via `@import "shadcn/tailwind.css"`, but that path
