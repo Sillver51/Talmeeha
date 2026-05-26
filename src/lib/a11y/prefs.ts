@@ -8,6 +8,8 @@ export interface Prefs {
   reducedMotion: ReducedMotion;
   digits: DigitStyle;
   sound: boolean;
+  /** Master output volume, 0–100. */
+  volume: number;
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -15,14 +17,24 @@ export const DEFAULT_PREFS: Prefs = {
   reducedMotion: "system",
   digits: "western",
   sound: true,
+  volume: 60,
 };
+
+function clampVolume(v: number): number {
+  if (!Number.isFinite(v)) return 60;
+  if (v < 0) return 0;
+  if (v > 100) return 100;
+  return Math.round(v);
+}
 
 /** Immutable overlay of a partial patch onto a base prefs object. */
 export function mergePrefs(base: Prefs, patch: Partial<Prefs>): Prefs {
-  return { ...base, ...patch };
+  const next: Prefs = { ...base, ...patch };
+  next.volume = clampVolume(next.volume);
+  return next;
 }
 
-/** The `<html>` data-* attributes that CSS keys theming/motion off. (`sound` has no CSS hook.) */
+/** The `<html>` data-* attributes that CSS keys theming/motion off. (`sound`/`volume` have no CSS hook.) */
 export function prefsDataAttributes(p: Prefs): Record<string, string> {
   return {
     "data-palette": p.palette,

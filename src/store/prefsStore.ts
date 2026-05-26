@@ -53,6 +53,7 @@ export const usePrefsStore = create<PrefsStore>((set, get) => ({
       reducedMotion: get().reducedMotion,
       digits: get().digits,
       sound: get().sound,
+      volume: get().volume,
     };
     const next = mergePrefs(current, { [key]: value } as Partial<Prefs>);
     savePrefs(next);
