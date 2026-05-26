@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePrefsStore } from "@/store/prefsStore";
 import InstallButton from "@/components/pwa/InstallButton";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 
 interface SettingsSheetProps {
@@ -17,6 +18,7 @@ export default function SettingsSheet({ open, onClose }: SettingsSheetProps) {
   const reducedMotion = usePrefsStore((s) => s.reducedMotion);
   const digits = usePrefsStore((s) => s.digits);
   const sound = usePrefsStore((s) => s.sound);
+  const volume = usePrefsStore((s) => s.volume);
   const update = usePrefsStore((s) => s.update);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -89,6 +91,21 @@ export default function SettingsSheet({ open, onClose }: SettingsSheetProps) {
         <div className="settings-row">
           <span>الصوت</span>
           <Switch checked={sound} onCheckedChange={(v) => update("sound", v)} aria-label="الصوت" />
+        </div>
+
+        <div className="settings-row">
+          <span id="set-volume-label">مستوى الصوت</span>
+          <div style={{ flex: 1, marginInlineStart: ".6rem", maxWidth: 180 }}>
+            <Slider
+              aria-labelledby="set-volume-label"
+              min={0}
+              max={100}
+              step={5}
+              value={[volume]}
+              disabled={!sound}
+              onValueChange={(v) => update("volume", v[0] ?? 0)}
+            />
+          </div>
         </div>
 
         <div className="settings-row">
