@@ -8,6 +8,7 @@ import CoachMarks from "@/components/onboarding/CoachMarks";
 import HistoryTape from "@/components/game/HistoryTape";
 import type { Team } from "@/lib/types";
 import { hLeader, myRole, myTurn } from "@/lib/ui/roles";
+import { lastEventOf } from "@/lib/game/logParser";
 import { useGameStore } from "@/store/gameStore";
 import { usePrefsStore } from "@/store/prefsStore";
 import { ensureEngine, useGameSounds } from "@/lib/audio";
@@ -64,6 +65,11 @@ export default function GameScreen() {
     return map;
   }, [gs.players]);
 
+  const lastEvent = useMemo(
+    () => lastEventOf(gs.log ?? [], gs.teamNames),
+    [gs.log, gs.teamNames],
+  );
+
   return (
     <div
       className="screen game-on"
@@ -80,6 +86,7 @@ export default function GameScreen() {
           isHost={isHost}
           winsRed={winsData.red || 0}
           winsBlue={winsData.blue || 0}
+          lastEvent={lastEvent}
         />
         <BoardStage
           gs={gs}
