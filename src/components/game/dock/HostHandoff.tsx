@@ -5,11 +5,19 @@ import { hLeader } from "@/lib/ui/roles";
 import { useGameStore } from "@/store/gameStore";
 import TeamGlyph from "@/components/brand/TeamGlyph";
 import { Button } from "@/components/ui/button";
+import LeaderInput from "./LeaderInput";
 
 interface HostHandoffProps {
   gs: PlayerView;
 }
 
+/**
+ * Host pass-and-play dock for the leader phase. The host is the de-facto
+ * leader on a shared device:
+ *  1. Pass the phone to the on-turn leader (hand-pass animation + name).
+ *  2. Press-and-hold to reveal the key (no persistent secret).
+ *  3. Type and send the clue inline (LeaderInput shape embedded).
+ */
 export default function HostHandoff({ gs }: HostHandoffProps) {
   const setPeeking = useGameStore((s) => s.setPeeking);
   const peeking = useGameStore((s) => s.peeking);
@@ -18,16 +26,14 @@ export default function HostHandoff({ gs }: HostHandoffProps) {
 
   return (
     <>
-      <div className="row" style={{ justifyContent: "center" }}>
+      <div className="row" style={{ justifyContent: "center", gap: ".5rem" }}>
         <span className="hand-pass" aria-hidden="true">🤲</span>
-        <span>
-          مرّر الجهاز إلى القائد <TeamGlyph team={gs.turn} /> {hLeader(gs)}
+        <span style={{ fontSize: ".78rem", fontWeight: 800 }}>
+          مرّر إلى القائد <TeamGlyph team={gs.turn} /> {hLeader(gs)}
         </span>
-      </div>
-      <div className="row" style={{ justifyContent: "center", marginTop: ".4rem" }}>
         <Button
           variant="gold"
-          size="default"
+          size="sm"
           aria-label="اضغط مطوّلاً لرؤية المفتاح"
           onPointerDown={show}
           onPointerUp={hide}
@@ -45,8 +51,11 @@ export default function HostHandoff({ gs }: HostHandoffProps) {
           onBlur={hide}
           onContextMenu={(e) => e.preventDefault()}
         >
-          {peeking ? "👁 المفتاح ظاهر" : "اضغط مطوّلاً لرؤية المفتاح"}
+          {peeking ? "👁 ظاهر" : "👁 المفتاح"}
         </Button>
+      </div>
+      <div style={{ marginTop: ".4rem" }}>
+        <LeaderInput />
       </div>
     </>
   );

@@ -95,11 +95,14 @@ describe("ActionDock router", () => {
     expect(container.textContent).toMatch(/لعبة جديدة/);
   });
 
-  it("renders HostHandoff for host during leader phase (pre-clue)", () => {
+  it("renders HostHandoff for host during leader phase (pre-clue) with clue input", () => {
     const { container } = render(
       <ActionDock gs={gsBase()} role="host" myId={null} isHost={true} isMyTurn={false} />,
     );
+    // Hand-pass message + peek button + embedded LeaderInput (clue word + count + send)
     expect(container.textContent).toMatch(/المفتاح/);
+    expect(container.querySelector('input[placeholder="كلمة واحدة"]')).not.toBeNull();
+    expect(container.textContent).toMatch(/إرسال/);
   });
 
   it("renders HostGuessControls for host during guess phase", () => {
