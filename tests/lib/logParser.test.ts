@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseLogEntry } from "@/lib/game/logParser";
+import { parseLogEntry, lastEventOf } from "@/lib/game/logParser";
 
 describe("parseLogEntry", () => {
   const teamNames = { red: "الفريق الأحمر", blue: "الفريق الأزرق" };
@@ -70,5 +70,31 @@ describe("parseLogEntry", () => {
   it("preserves raw text on every kind", () => {
     const raw = '💡 سارة: "نجم" — 2';
     expect(parseLogEntry(raw).raw).toBe(raw);
+  });
+
+  describe("lastEventOf", () => {
+    const teamNames = { red: "الفريق الأحمر", blue: "الفريق الأزرق" };
+
+    it("returns null for an empty log", () => {
+      expect(lastEventOf([], teamNames)).toBeNull();
+    });
+
+    it("parses the newest entry (server pushes newest-first)", () => {
+      const log = [
+        '✅ ليلى: "نخلة" — إصابة!', // newest
+        '💡 عمر: "بحر" — 3',
+      ];
+      const e = lastEventOf(log, teamNames);
+      expect(e?.kind).toBe("hit");
+      expect(e?.by).toBe("ليلى");
+      expect(e?.word).toBe("نخلة");
+    });
+
+    it("resolves team names on win lines", () => {
+      const log = [`🏆 فاز ${teamNames.red}! 🍇`];
+      const e = lastEventOf(log, teamNames);
+      expect(e?.kind).toBe("win");
+      expect(e?.team).toBe("red");
+    });
   });
 });

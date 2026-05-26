@@ -104,3 +104,16 @@ export function parseLogEntry(
   }
   return { kind: "info", raw };
 }
+
+/**
+ * Returns the parsed last (newest) entry from a server log, or null if empty.
+ * The server pushes newest-first, so log[0] is the most recent line.
+ * Used by Headline (reveal-burst trigger) and VoiceStrand (phrase selection).
+ */
+export function lastEventOf(
+  log: readonly string[],
+  teamNames?: { red: string; blue: string },
+): LogEvent | null {
+  if (!log.length) return null;
+  return parseLogEntry(log[0]!, teamNames);
+}
