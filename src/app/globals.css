@@ -338,10 +338,12 @@ body::after{
 
 /* ─── LOGO ─── */
 .logo{
-  /* line-height >=1.25 + padding-block keep Arabic descenders (م loop, ة dot,
-   * تَلْميحَة diacritics) inside the background-clip:text gradient box. */
+  /* Tajawal at weight 900 has tall ascenders + Arabic dots that sit ABOVE the
+   * cap line (ة dots, ت dots, م/ل upper curves). Generous vertical padding
+   * keeps them clear of the container edges; background-clip:text is also
+   * constrained by the line box so we need room on BOTH sides of the text. */
   font-size:clamp(3rem, 12vw, 5rem);font-weight:900;letter-spacing:-1px;
-  line-height:1.25;padding-block:.04em .12em;
+  line-height:1.5;padding-block:.22em .18em;
   background:linear-gradient(135deg,var(--grape2) 0%,var(--gold2) 50%,var(--red2) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
